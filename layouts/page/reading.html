@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ .Title }} · {{ .Site.Title }}</title>
+{{- $data := .Resources.Get "books.json" | transform.Unmarshal }}
+<style>
+:root{
+  --bg:#f6f3ec; --panel:#fffdf8; --ink:#2c2822; --ink2:#6f675c; --line:#e6dfd2;
+  --accent:#9a6b3f; --accent2:#c9a06a; --fin:#2e7d32; --ing:#1565c0; --un:#8d867c;
+  --shadow:0 1px 3px rgba(60,48,32,.08),0 4px 14px rgba(60,48,32,.06);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#1b1915; --panel:#25221c; --ink:#ece5d8; --ink2:#a89f8e; --line:#3d3830;
+    --accent:#cfa877; --accent2:#8a6a45; --fin:#7cb880; --ing:#7aa8e0; --un:#7d766a;
+    --shadow:0 1px 3px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25);
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif}
+.wrap{max-width:1200px;margin:0 auto;padding:24px 18px 60px}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+.muted{color:var(--ink2)}
+.hero{text-align:center;padding:34px 12px 10px}
+.hero h1{font-family:Georgia,"Songti SC","STSong","SimSun",serif;font-size:34px;margin:0 0 8px;letter-spacing:.06em}
+.hero p{margin:4px 0;color:var(--ink2)}
+.hero .src{font-size:13px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin:26px 0}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow)}
+.stat b{display:block;font-size:24px;font-family:Georgia,serif;color:var(--accent)}
+.stat span{font-size:12.5px;color:var(--ink2)}
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:0 0 26px}
+@media (max-width:760px){.charts{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;box-shadow:var(--shadow)}
+.panel h2{font-size:15px;margin:0 0 12px;color:var(--ink2);font-weight:600;letter-spacing:.05em}
+.ybar,.cbar{display:flex;align-items:center;gap:8px;margin:7px 0;font-size:12.5px}
+.ylabel{width:34px;text-align:right;color:var(--ink2);flex:none}
+.clabel{width:76px;text-align:right;color:var(--ink2);flex:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ytrack,.ctrack{flex:1;height:12px;background:var(--bg);border-radius:6px;overflow:hidden;border:1px solid var(--line)}
+.yfill{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:6px}
+.cfill{height:100%;background:linear-gradient(90deg,#7aa8e0,#3f6fb5);border-radius:6px}
+.yval,.cval{width:86px;flex:none;color:var(--ink2)}
+.cval{width:56px;text-align:right}
+.controls{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);padding:12px 0;border-bottom:1px solid var(--line);margin-bottom:18px}
+.controls .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.controls input[type=search],.controls select{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:14px}
+.controls input[type=search]{flex:1;min-width:180px}
+.chip{border:1px solid var(--line);background:var(--panel);color:var(--ink2);border-radius:999px;padding:6px 14px;font-size:13px;cursor:pointer}
+.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.countline{font-size:13px;color:var(--ink2);margin-left:auto}
+.btn{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:7px 12px;font-size:13px;cursor:pointer}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.records{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
+.record{display:flex;gap:14px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s}
+.record:hover{transform:translateY(-2px);box-shadow:0 3px 8px rgba(60,48,32,.12),0 8px 22px rgba(60,48,32,.1)}
+.cover{margin:0;flex:none;width:72px}
+.cover img{width:72px;height:98px;object-fit:cover;border-radius:6px;box-shadow:var(--shadow);display:block;background:var(--bg)}
+.cover img.cover-fail{visibility:hidden;height:0}
+.body{flex:1;min-width:0}
+.title{margin:0 0 2px;font-size:15.5px;font-family:Georgia,"Songti SC","SimSun",serif;line-height:1.4}
+.title a{color:var(--ink)}
+.meta{margin:0 0 8px;font-size:12.5px;color:var(--ink2);display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.cat::before{content:"· ";margin-left:2px}
+.progwrap{display:flex;align-items:center;gap:8px;margin:2px 0 6px}
+.progbar{flex:1;height:8px;background:var(--bg);border:1px solid var(--line);border-radius:4px;overflow:hidden}
+.progbar span{display:block;height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent))}
+.pct{font-size:12px;color:var(--ink2);width:38px;text-align:right;flex:none}
+.dates{margin:0;font-size:12px;color:var(--ink2);display:flex;flex-wrap:wrap;gap:10px}
+.dl::before{content:"🕐 ";opacity:.6}
+.record[data-status="finished"] .progbar span{background:linear-gradient(90deg,#69a46e,var(--fin))}
+.record[data-status="unread"] .progbar span{background:var(--line)}
+.notes{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}
+.notes summary{cursor:pointer;font-size:13px;color:var(--accent);font-weight:600;list-style:none}
+.notes summary::before{content:"▸ ";font-size:11px}
+.notes[open] summary::before{content:"▾ "}
+.notes summary::-webkit-details-marker{display:none}
+.notes h4{font-size:13px;margin:12px 0 6px;color:var(--ink2);font-weight:600}
+.thoughts,.highlights{list-style:none;margin:0;padding:0}
+.thoughts li,.highlights li{margin:0 0 10px;padding-left:10px;border-left:3px solid var(--accent2)}
+blockquote{margin:0;font-size:13px;color:var(--ink2);font-family:Georgia,"Songti SC","SimSun",serif}
+.tquote{margin:0 0 4px;font-size:13px;color:var(--ink2);font-family:Georgia,"Songti SC","SimSun",serif}
+.ttext{margin:4px 0 2px;font-size:13.5px;white-space:pre-wrap}
+.tmeta,.hmeta{margin:2px 0 0;font-size:11.5px;color:var(--ink2);opacity:.85}
+footer{margin-top:40px;text-align:center;font-size:12px;color:var(--ink2)}
+@media (max-width:560px){
+  .wrap{padding:16px 12px 40px}
+  .hero h1{font-size:26px}
+  .records{grid-template-columns:1fr}
+  .countline{margin-left:0;width:100%}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="hero">
+  <h1>我的阅读记录</h1>
+  <p>微信读书 · 书架与笔记全览</p>
+  <p class="src">数据快照 {{ $data.generated }} · <a href="{{ .Site.Home.RelPermalink }}">← 返回 {{ .Site.Title }}</a></p>
+</header>
+
+<section class="stats" aria-label="阅读统计概览">
+  {{- range $data.stats }}
+  <div class="stat"><b>{{ .value }}</b><span>{{ .label }}</span></div>
+  {{- end }}
+</section>
+
+<section class="charts" aria-label="阅读偏好图表">
+  <div class="panel"><h2>年度阅读时长</h2><div class="ybars">
+    {{- range $data.years }}
+    <div class="ybar"><span class="ylabel">{{ .year }}</span><div class="ytrack"><div class="yfill" style="width:{{ .width }}%"></div></div><span class="yval">{{ .text }}</span></div>
+    {{- end }}
+  </div></div>
+  <div class="panel"><h2>偏好分类 TOP 7</h2><div class="cbars">
+    {{- range $data.top_categories }}
+    <div class="cbar"><span class="clabel">{{ .name }}</span><div class="ctrack"><div class="cfill" style="width:{{ .width }}%"></div></div><span class="cval">{{ .text }}</span></div>
+    {{- end }}
+  </div></div>
+</section>
+
+<div class="controls" role="search">
+  <div class="row">
+    <input type="search" id="q" placeholder="搜索书名或作者…" aria-label="搜索书名或作者">
+    <select id="sort" aria-label="排序方式">
+      <option value="recent">最近阅读 ↓</option>
+      <option value="status">按状态（读完→在读→未读）</option>
+      <option value="added">入架时间 ↓</option>
+      <option value="progress">阅读进度 ↓</option>
+      <option value="notes">笔记数量 ↓</option>
+      <option value="title">书名 A→Z</option>
+    </select>
+    <select id="cat" aria-label="分类筛选"><option value="">全部分类</option>{{- range $data.categories }}<option value="{{ .value }}">{{ .label }}</option>{{- end }}</select>
+    <button class="chip on" data-f="all">全部</button>
+    <button class="chip" data-f="finished">已读完</button>
+    <button class="chip" data-f="reading">在读</button>
+    <button class="chip" data-f="unread">未开始</button>
+    <button class="btn" id="onlyNotes">仅有笔记</button>
+    <button class="btn" id="expandAll">展开全部备注</button>
+    <span class="countline" id="count"></span>
+  </div>
+</div>
+
+<main class="records" id="records">
+{{- range $b := $data.books }}
+  <article class="record" data-status="{{ $b.status }}" data-last="{{ $b.last_ts }}" data-added="{{ $b.added_ts }}" data-progress="{{ $b.progress }}" data-notes="{{ $b.notes_count }}" data-cat="{{ $b.category }}" data-title="{{ $b.title }}" data-author="{{ $b.author }}">
+    <figure class="cover">{{ with $b.cover }}<img src="{{ . }}" alt="封面" loading="lazy" referrerpolicy="no-referrer" onerror="this.classList.add('cover-fail')">{{ end }}</figure>
+    <div class="body">
+      <h3 class="title">{{ with $b.link }}<a href="{{ . }}" target="_blank" rel="noopener">{{ $b.title }}</a>{{ else }}{{ $b.title }}{{ end }}</h3>
+      <p class="meta">{{ if $b.author }}{{ $b.author }}{{ else }}佚名{{ end }}{{ with $b.subcategory }}<span class="cat">{{ . }}</span>{{ end }}</p>
+      <div class="progwrap"><div class="progbar"><span style="width:{{ $b.progress }}%"></span></div><span class="pct">{{ $b.progress }}%</span></div>
+      <p class="dates">
+        {{- if eq $b.status "finished" }}{{ with $b.last_read }}<span class="dl">读完于 <time datetime="{{ . }}">{{ . }}</time></span>{{ end }}
+        {{- else }}{{ with $b.last_read }}<span class="dl">最近阅读 <time datetime="{{ . }}">{{ . }}</time></span>{{ end }}
+        {{- end }}{{ with $b.added }}<span class="dl">入架 {{ . }}</span>{{ end }}
+      </p>
+      {{- if or $b.thoughts $b.highlights }}
+      <details class="notes">
+        <summary>个人备注（想法 {{ len $b.thoughts }} · 划线 {{ len $b.highlights }}）</summary>
+        {{- with $b.thoughts }}
+        <h4>想法（{{ len . }}）</h4>
+        <ul class="thoughts">
+          {{- range . }}
+          <li class="thought">{{ with .quote }}<blockquote class="tquote">{{ . }}</blockquote>{{ end }}{{ with .text }}<p class="ttext">{{ . }}</p>{{ end }}<p class="tmeta">{{ with .chapter }}{{ . }} · {{ end }}{{ .date }}</p></li>
+          {{- end }}
+        </ul>
+        {{- end }}
+        {{- with $b.highlights }}
+        <h4>划线（{{ len . }}）</h4>
+        <ul class="highlights">
+          {{- range . }}
+          <li class="highlight"><blockquote>{{ .text }}</blockquote><p class="hmeta">{{ with .chapter }}{{ . }} · {{ end }}{{ .date }}</p></li>
+          {{- end }}
+        </ul>
+        {{- end }}
+      </details>
+      {{- end }}
+    </div>
+  </article>
+{{- end }}
+</main>
+
+<footer>
+  <p>状态依据书架读完标记与阅读进度推导 · 进度为接口返回的最近一次同步值 · 封面图片来自微信读书 CDN，需联网显示</p>
+  <p>更新方式：运行 <code>py scripts/weread_sync.py 快照.html</code> 重新生成数据后发布</p>
+</footer>
+</div>
+
+<script>
+(function(){
+  var records = Array.prototype.slice.call(document.querySelectorAll('.record'));
+  var q = document.getElementById('q'), sort = document.getElementById('sort'),
+      cat = document.getElementById('cat'), count = document.getElementById('count'),
+      onlyNotes = document.getElementById('onlyNotes'), chips = document.querySelectorAll('.chip');
+  var filter = 'all', notesOnly = false;
+
+  function apply(){
+    var kw = q.value.trim().toLowerCase(), c = cat.value;
+    var shown = 0;
+    records.forEach(function(el){
+      var ok = true;
+      if (filter !== 'all' && el.dataset.status !== filter) ok = false;
+      if (ok && notesOnly && el.dataset.notes === '0') ok = false;
+      if (ok && c && el.dataset.cat !== c) ok = false;
+      if (ok && kw && (el.dataset.title + ' ' + el.dataset.author).indexOf(kw) === -1) ok = false;
+      el.style.display = ok ? '' : 'none';
+      if (ok) shown++;
+    });
+    count.textContent = '显示 ' + shown + ' / ' + records.length + ' 条';
+    sortRecords();
+  }
+
+  function sortRecords(){
+    var mode = sort.value;
+    var arr = records.filter(function(el){ return el.style.display !== 'none'; });
+    var parent = document.getElementById('records');
+    arr.sort(function(a, b){
+      var x, y;
+      if (mode === 'title') { x = a.dataset.title; y = b.dataset.title; return x.localeCompare(y, 'zh-Hans-CN'); }
+      if (mode === 'progress') { x = +a.dataset.progress; y = +b.dataset.progress; return y - x; }
+      if (mode === 'notes') { x = +a.dataset.notes; y = +b.dataset.notes; return y - x; }
+      if (mode === 'added') { x = +a.dataset.added; y = +b.dataset.added; return y - x; }
+      if (mode === 'status') {
+        var order = {finished: 0, reading: 1, unread: 2};
+        x = order[a.dataset.status]; y = order[b.dataset.status];
+        if (x !== y) return x - y;
+        return (+b.dataset.last) - (+a.dataset.last);
+      }
+      x = +a.dataset.last || 0; y = +b.dataset.last || 0; return y - x;
+    });
+    arr.forEach(function(el){ parent.appendChild(el); });
+  }
+
+  chips.forEach(function(ch){
+    ch.addEventListener('click', function(){
+      chips.forEach(function(x){ x.classList.remove('on'); });
+      ch.classList.add('on');
+      filter = ch.dataset.f;
+      apply();
+    });
+  });
+  q.addEventListener('input', apply);
+  cat.addEventListener('change', apply);
+  sort.addEventListener('change', apply);
+  onlyNotes.addEventListener('click', function(){
+    notesOnly = !notesOnly;
+    this.classList.toggle('on');
+    apply();
+  });
+  document.getElementById('expandAll').addEventListener('click', function(){
+    var details = document.querySelectorAll('.notes');
+    var anyClosed = Array.prototype.some.call(details, function(d){ return !d.open; });
+    details.forEach(function(d){ d.open = anyClosed; });
+    this.textContent = anyClosed ? '收起全部备注' : '展开全部备注';
+  });
+  apply();
+})();
+</script>
+</body>
+</html>
