@@ -7,7 +7,9 @@ slug: reading
 layout: reading
 menu:
     main:
-        weight: -50
+        weight: -60
+        params:
+            icon: book
 ---
 
 微信读书阅读记录，数据来自快照同步（`py scripts/weread_sync.py`）。
