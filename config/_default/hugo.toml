@@ -1,0 +1,14 @@
+baseURL = "https://bxycode000.github.io/"
+locale = "zh-CN"
+title = "Lyi"
+defaultContentLanguage = "zh-CN"
+hasCJKLanguage = true
+enableEmoji = true
+theme = "hugo-theme-stack"
+
+[pagination]
+    pagerSize = 7
+
+[permalinks]
+    post = "/p/:slug/"
+    page = "/:slug/"
