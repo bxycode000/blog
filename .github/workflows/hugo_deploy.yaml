@@ -20,7 +20,7 @@ jobs:
           hugo-version: "latest"
           extended: true
       - name: Build Web
-        run: hugo
+        run: hugo -e stack
       - name: Deploy Web
         uses: peaceiris/actions-gh-pages@v4
         with:

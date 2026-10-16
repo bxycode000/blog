@@ -1,0 +1,8 @@
+theme = "hugo-theme-stack"
+
+[pagination]
+    pagerSize = 7
+
+[permalinks]
+    post = "/p/:slug/"
+    page = "/:slug/"

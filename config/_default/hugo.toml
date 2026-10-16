@@ -1,14 +1,11 @@
 baseURL = "https://bxycode000.github.io/"
 locale = "zh-CN"
 title = "Lyi"
-defaultContentLanguage = "zh-CN"
+defaultContentLanguage = "zh-cn"
 hasCJKLanguage = true
 enableEmoji = true
-theme = "hugo-theme-stack"
 
-[pagination]
-    pagerSize = 7
-
-[permalinks]
-    post = "/p/:slug/"
-    page = "/:slug/"
+# 主题通过环境目录选择：
+#   hugo -e stack  → config/stack/   （线上部署用）
+#   hugo -e reimu  → config/reimu/
+# 不带 -e 时没有主题，构建会裸奔，预览务必带 -e

@@ -1,0 +1,6 @@
+theme = "hugo-theme-reimu"
+
+# page 固定为 /:slug/ 以对齐共享内容里 Stack 结构的导航页
+# （about → /about/，archives → /archives/，search → /search/）
+[permalinks]
+    page = "/:slug/"
