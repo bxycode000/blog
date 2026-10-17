@@ -63,7 +63,13 @@ py scripts/weread/history.py   # 书架外历史阅读（增量回扫最近 8 �
 
 ## 历史阅读（书架外）
 
-微信读书 App 的「读过 1298 / 读完 116」是历史口径，而 `/shelf/sync` 只返回当前书架。`history.py` 通过 `/readdata/detail?mode=weekly` 按周回溯「当周读得最多的前 10 本书」，再合并笔记库、补全书目与进度，产出 `/reading-history/` 页面。
+微信读书 App 的「读过 1298 / 读完 116」是历史口径，而 `/shelf/sync` 只返回当前书架。`history.py` 通过 `/readdata/detail?mode=weekly` 按周回溯「当周读得最多的前 10 本书」，再合并笔记库、补全书目与进度，数据写入 `data/history.json`。
+
+页面展示上已并入主阅读页：
+
+- 可确认读完的历史书并入「已读」分类；
+- 其余进入第五个分类「历史阅读」（带「已移出书架」角标）；
+- 分类、年份、搜索、URL 直链全部共用一套交互。
 
 - 首次全量：349 周、约 4 分钟，得到 452 本书（其中 39 本可确认读完）。
 - 之后增量：只回扫最近 8 周，约 7 秒。
@@ -120,10 +126,8 @@ content/page/reading/
 ├─ books.json            # 同步产物
 └─ reviews.manual.json   # 手工短评
 
-data/history.json                    # 历史阅读产物（456 本量级）
-content/page/reading-history/index.md
-layouts/page/reading.html            # 阅读页（四分类）
-layouts/page/reading-history.html    # 历史阅读页
-layouts/partials/reading/styles.html # 两页共享样式
+data/history.json                    # 历史阅读数据源（并入主页面）
+layouts/page/reading.html            # 阅读页（五分类：在读/已读/想读/准备读/历史阅读）
+layouts/partials/reading/styles.html # 共享样式
 .github/workflows/weread-sync.yaml   # 定时同步 + 部署
 ```

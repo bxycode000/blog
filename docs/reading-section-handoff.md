@@ -583,3 +583,27 @@ App 统计「在读 1131 / 读完 116」是历史口径，`/shelf/sync` 只有�
 - Hugo `-e stack` 构建通过；历史页 452 卡片、60 分批、年份 2023 筛出 246、搜索/空状态/重置正常，0 JS 错误；暗色与 390px 移动端正常。
 - 顺带修复两个样式问题：① `.prog .fill` 的 `--c` 未在卡片上定义，进度条一直透明；② `.card` 未设 `min-width:0`，最长作者名把移动端网格撑宽 71px。
 - 局限：每周前 10、过滤 <5 分钟，非完整历史；剩余约 300 本（短阅读/第 11 名以后）只能手动补录或申请个人数据副本。
+
+---
+
+## 十六、2026-10-18 02:15：历史数据并入主页面（删除独立历史页）
+
+### 设计
+
+用户要求整合。合并方案：
+
+- **历史中「已确认读完」的书并入「已读」分类**（`status=="finished"` 的 39 本），已读从 9 → 48。
+- 其余 413 本成为**第五个分类「历史阅读」**（紫色系 `--c-history`），卡片带「已移出书架」角标与最后阅读时间，进度 >0 时显示进度条。
+- 去重：按 `title|author` 与书架比对（当前 0 重名，仍保留防护）。
+- 统计卡 5 列（移动端 2 列，奇数最后一张跨 2 列）；tab、年份、搜索、分批、URL 状态全链路共用；`?status=history&year=2023` 可直链。
+- **删除** `layouts/page/reading-history.html` 与 `content/page/reading-history/`；`data/history.json` 保留为数据源。
+
+### 模板要点（layouts/page/reading.html）
+
+- 书架数据先建 `$shelfKeys`（title|author 集合），历史循环里 `continue` 跳过重名。
+- 历史条目 `dict "src" "history"`，年份口径：已读=finishDate（回退 lastReadDate），其余=lastReadDate。
+- `STATUSES` 数组加 `'history'`；空状态条件改为 `and (not $books) (not $history)`。
+
+### 验证
+
+Playwright：五 tab（38/48/130/255/413）、已读 2023 年筛出 8 本、历史+2023 联动 237 本、URL 带双参数、重置回在读、暗色历史徽章 `rgb(179,157,208)`、390px 溢出 0、0 JS 错误。884 张卡片。

@@ -23,7 +23,12 @@
 {{- $reading := slice -}}
 {{- $finished := slice -}}
 {{- $planned := slice -}}
+{{- $history := slice -}}
 {{- $yearSet := dict -}}
+{{- $shelfKeys := dict -}}
+{{- range $books -}}
+  {{- $shelfKeys = merge $shelfKeys (dict (printf "%s|%s" (.title | default "") (.author | default "")) true) -}}
+{{- end -}}
 {{- range $books -}}
   {{- $b := . -}}
   {{- $status := $b.status | default "want" -}}
@@ -46,7 +51,7 @@
   {{- end -}}
   {{- $stale := 0 -}}
   {{- if eq $s4 "planned" -}}{{- $stale = int (div (sub now.Unix $lastTs) 86400) -}}{{- end -}}
-  {{- $item := dict "b" $b "status" $s4 "year" $year "sortTs" $sortTs "stale" $stale -}}
+  {{- $item := dict "b" $b "status" $s4 "year" $year "sortTs" $sortTs "stale" $stale "src" "shelf" -}}
   {{- if eq $s4 "want" -}}{{- $want = $want | append $item -}}
   {{- else if eq $s4 "reading" -}}{{- $reading = $reading | append $item -}}
   {{- else if eq $s4 "finished" -}}{{- $finished = $finished | append $item -}}
@@ -54,20 +59,39 @@
   {{- end -}}
   {{- if gt $year 0 -}}{{- $yearSet = merge $yearSet (dict (string $year) true) -}}{{- end -}}
 {{- end -}}
+{{- range site.Data.history.books | default slice -}}
+  {{- $b := . -}}
+  {{- $key := printf "%s|%s" ($b.title | default "") ($b.author | default "") -}}
+  {{- if index $shelfKeys $key -}}{{- continue -}}{{- end -}}
+  {{- $year := 0 -}}
+  {{- $sortTs := 0 -}}
+  {{- if eq $b.status "finished" -}}
+    {{- with $b.finishDate -}}{{- $year = (time.AsTime .).Year -}}{{- $sortTs = (time.AsTime .).Unix -}}{{- else -}}{{- with $b.lastReadDate -}}{{- $year = (time.AsTime .).Year -}}{{- $sortTs = (time.AsTime .).Unix -}}{{- end -}}{{- end -}}
+  {{- else -}}
+    {{- with $b.lastReadDate -}}{{- $year = (time.AsTime .).Year -}}{{- $sortTs = (time.AsTime .).Unix -}}{{- end -}}
+  {{- end -}}
+  {{- $item := dict "b" $b "status" $b.status "year" $year "sortTs" $sortTs "stale" 0 "src" "history" -}}
+  {{- if eq $b.status "finished" -}}{{- $finished = $finished | append $item -}}
+  {{- else -}}{{- $history = $history | append $item -}}
+  {{- end -}}
+  {{- if gt $year 0 -}}{{- $yearSet = merge $yearSet (dict (string $year) true) -}}{{- end -}}
+{{- end -}}
 {{- $want = sort $want "sortTs" "desc" -}}
 {{- $reading = sort $reading "sortTs" "desc" -}}
 {{- $finished = sort $finished "sortTs" "desc" -}}
 {{- $planned = sort $planned "sortTs" "desc" -}}
+{{- $history = sort $history "sortTs" "desc" -}}
 {{- $years := slice -}}
 {{- range $y, $_ := $yearSet -}}{{- $years = $years | append (int $y) -}}{{- end -}}
 {{- $years = sort $years -}}
 {{- $years = collections.Reverse $years -}}
-{{- $total := len $books -}}
+{{- $total := add (len $books) (len $history) -}}
 {{- $cats := slice
   (dict "key" "reading" "label" "在读" "hint" "按最近阅读排序" "list" $reading)
   (dict "key" "finished" "label" "已读" "hint" "按读完时间排序" "list" $finished)
   (dict "key" "want" "label" "想读" "hint" "按收藏时间排序" "list" $want)
   (dict "key" "planned" "label" "准备读" "hint" (printf "在读但超过 %d 天未读，按最后阅读排序" $abandonDays) "list" $planned)
+  (dict "key" "history" "label" "历史阅读" "hint" "已移出书架的阅读记录，按最后阅读排序" "list" $history)
 -}}
 <style>
 {{ partial "reading/styles.html" . | safeCSS }}
@@ -77,18 +101,17 @@
 <div class="wrap">
 <header class="hero">
   <h1>我的阅读记录</h1>
-  <p class="sub">微信读书 · {{ $total }} 本藏书</p>
+  <p class="sub">微信读书 · 书架 {{ len $books }} 本 + 历史 {{ len $history }} 本</p>
   <p class="meta">
     {{- with $stats.readDays }}<span>阅读 {{ . }} 天</span><span class="dot">·</span>{{ end -}}
     {{- with $stats.totalReadTimeText }}<span>累计 {{ . }}</span><span class="dot">·</span>{{ end -}}
     {{- if $data.generatedAt }}<span>同步于 {{ (time.AsTime $data.generatedAt).Format "2006-01-02 15:04" }}</span><span class="dot">·</span>{{ end -}}
-    {{- with site.Data.history }}<a href="{{ "reading-history/" | relURL }}">历史阅读 {{ .count }} 本</a><span class="dot">·</span>{{ end -}}
     <a href="{{ .Site.Home.RelPermalink }}">返回 {{ .Site.Title }}</a>
   </p>
   <div class="rule" aria-hidden="true"></div>
 </header>
 
-{{- if not $books }}
+{{- if and (not $books) (not $history) }}
 <div class="empty">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
   <b>阅读数据尚未同步</b>
@@ -165,6 +188,8 @@
 
           {{- if or (eq $cat.key "reading") (eq $cat.key "planned") }}
           <div class="prog"><div class="track"><span class="fill" style="width:{{ $b.progress }}%"></span></div><span class="pct">{{ $b.progress }}%</span></div>
+          {{- else if and (eq $cat.key "history") (gt $b.progress 0) }}
+          <div class="prog"><div class="track"><span class="fill" style="width:{{ $b.progress }}%"></span></div><span class="pct">{{ $b.progress }}%</span></div>
           {{- end }}
 
           <p class="dates">
@@ -176,6 +201,8 @@
             {{- else if eq $cat.key "planned" }}
               {{- with $b.lastReadDate }}<span>最后阅读 <time datetime="{{ . }}">{{ . }}</time></span><span class="sep">·</span>{{ end }}
               <span>已停滞 {{ $item.stale }} 天</span>
+            {{- else if eq $cat.key "history" }}
+              {{- with $b.lastReadDate }}<span>最后阅读 <time datetime="{{ . }}">{{ . }}</time></span><span class="sep">·</span>{{ end }}<span>已移出书架</span>
             {{- else }}
               <span>尚未开始</span>
             {{- end }}
@@ -209,7 +236,7 @@
 </div>
 
 <footer class="foot">
-  <p>分类口径：已读 = 完成标记或进度 100%；准备读 = 在读但超过 {{ $abandonDays }} 天无阅读记录，每次构建自动重算。</p>
+  <p>分类口径：已读 = 完成标记或进度 100%；准备读 = 在读但超过 {{ $abandonDays }} 天无阅读记录；历史阅读 = 已移出书架的记录（其中可确认读完的已并入「已读」）。</p>
   <p>数据同步：<code>py scripts/weread/sync.py</code> · 封面来自微信读书 CDN · 进度为最近一次同步值</p>
 </footer>
 {{- end }}
@@ -221,7 +248,7 @@
 
   var PAGE = 60;
   var DEFAULT_STATUS = 'reading';
-  var STATUSES = ['reading', 'finished', 'want', 'planned'];
+  var STATUSES = ['reading', 'finished', 'want', 'planned', 'history'];
   var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   var panels = {};
