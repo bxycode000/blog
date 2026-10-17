@@ -3,260 +3,480 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f6f2ea" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#16140f" media="(prefers-color-scheme: dark)">
 <title>{{ .Title }} · {{ .Site.Title }}</title>
-{{- $data := .Resources.Get "books.json" | transform.Unmarshal }}
+<meta name="description" content="{{ .Description | default .Title }}">
+<link rel="icon" href="/favicon.ico">
+{{- $data := dict -}}
+{{- with .Resources.Get "books.json" -}}
+  {{- with try (transform.Unmarshal .) -}}
+    {{- if not .Err -}}{{- $data = .Value -}}{{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- $books := $data.books | default slice -}}
+{{- $stats := $data.stats | default dict -}}
+{{- $abandonDays := 180 -}}
+{{- $cutoffTs := (now.AddDate 0 0 (sub 0 $abandonDays)).Unix -}}
+{{- $want := slice -}}
+{{- $reading := slice -}}
+{{- $finished := slice -}}
+{{- $planned := slice -}}
+{{- $yearSet := dict -}}
+{{- range $books -}}
+  {{- $b := . -}}
+  {{- $status := $b.status | default "want" -}}
+  {{- $lastTs := 0 -}}
+  {{- with $b.lastReadDate -}}{{- $lastTs = (time.AsTime .).Unix -}}{{- end -}}
+  {{- if eq $lastTs 0 -}}{{- $lastTs = int ($b.updatedAt | default 0) -}}{{- end -}}
+  {{- $s4 := $status -}}
+  {{- if and (eq $status "reading") (lt $lastTs $cutoffTs) -}}{{- $s4 = "planned" -}}{{- end -}}
+  {{- $year := 0 -}}
+  {{- if eq $status "finished" -}}
+    {{- with $b.finishDate -}}{{- $year = (time.AsTime .).Year -}}{{- else -}}{{- with $b.lastReadDate -}}{{- $year = (time.AsTime .).Year -}}{{- end -}}{{- end -}}
+  {{- else if eq $status "want" -}}
+    {{- $year = (time.AsTime (int ($b.updatedAt | default 0))).Year -}}
+  {{- else -}}
+    {{- with $b.lastReadDate -}}{{- $year = (time.AsTime .).Year -}}{{- end -}}
+  {{- end -}}
+  {{- $sortTs := $lastTs -}}
+  {{- if eq $status "finished" -}}
+    {{- with $b.finishDate -}}{{- $sortTs = (time.AsTime .).Unix -}}{{- end -}}
+  {{- end -}}
+  {{- $stale := 0 -}}
+  {{- if eq $s4 "planned" -}}{{- $stale = int (div (sub now.Unix $lastTs) 86400) -}}{{- end -}}
+  {{- $item := dict "b" $b "status" $s4 "year" $year "sortTs" $sortTs "stale" $stale -}}
+  {{- if eq $s4 "want" -}}{{- $want = $want | append $item -}}
+  {{- else if eq $s4 "reading" -}}{{- $reading = $reading | append $item -}}
+  {{- else if eq $s4 "finished" -}}{{- $finished = $finished | append $item -}}
+  {{- else -}}{{- $planned = $planned | append $item -}}
+  {{- end -}}
+  {{- if gt $year 0 -}}{{- $yearSet = merge $yearSet (dict (string $year) true) -}}{{- end -}}
+{{- end -}}
+{{- $want = sort $want "sortTs" "desc" -}}
+{{- $reading = sort $reading "sortTs" "desc" -}}
+{{- $finished = sort $finished "sortTs" "desc" -}}
+{{- $planned = sort $planned "sortTs" "desc" -}}
+{{- $years := slice -}}
+{{- range $y, $_ := $yearSet -}}{{- $years = $years | append (int $y) -}}{{- end -}}
+{{- $years = sort $years -}}
+{{- $years = collections.Reverse $years -}}
+{{- $total := len $books -}}
+{{- $cats := slice
+  (dict "key" "reading" "label" "在读" "hint" "按最近阅读排序" "list" $reading)
+  (dict "key" "finished" "label" "已读" "hint" "按读完时间排序" "list" $finished)
+  (dict "key" "want" "label" "想读" "hint" "按收藏时间排序" "list" $want)
+  (dict "key" "planned" "label" "准备读" "hint" (printf "在读但超过 %d 天未读，按最后阅读排序" $abandonDays) "list" $planned)
+-}}
 <style>
-:root{
-  --bg:#f6f3ec; --panel:#fffdf8; --ink:#2c2822; --ink2:#6f675c; --line:#e6dfd2;
-  --accent:#9a6b3f; --accent2:#c9a06a; --fin:#2e7d32; --ing:#1565c0; --un:#8d867c;
-  --shadow:0 1px 3px rgba(60,48,32,.08),0 4px 14px rgba(60,48,32,.06);
-}
-@media (prefers-color-scheme: dark){
-  :root{
-    --bg:#1b1915; --panel:#25221c; --ink:#ece5d8; --ink2:#a89f8e; --line:#3d3830;
-    --accent:#cfa877; --accent2:#8a6a45; --fin:#7cb880; --ing:#7aa8e0; --un:#7d766a;
-    --shadow:0 1px 3px rgba(0,0,0,.3),0 4px 14px rgba(0,0,0,.25);
-  }
-}
-*{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif}
-.wrap{max-width:1200px;margin:0 auto;padding:24px 18px 60px}
-a{color:var(--accent);text-decoration:none}
-a:hover{text-decoration:underline}
-.muted{color:var(--ink2)}
-.hero{text-align:center;padding:34px 12px 10px}
-.hero h1{font-family:Georgia,"Songti SC","STSong","SimSun",serif;font-size:34px;margin:0 0 8px;letter-spacing:.06em}
-.hero p{margin:4px 0;color:var(--ink2)}
-.hero .src{font-size:13px}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin:26px 0}
-.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px;box-shadow:var(--shadow)}
-.stat b{display:block;font-size:24px;font-family:Georgia,serif;color:var(--accent)}
-.stat span{font-size:12.5px;color:var(--ink2)}
-.charts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:0 0 26px}
-@media (max-width:760px){.charts{grid-template-columns:1fr}}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px 18px;box-shadow:var(--shadow)}
-.panel h2{font-size:15px;margin:0 0 12px;color:var(--ink2);font-weight:600;letter-spacing:.05em}
-.ybar,.cbar{display:flex;align-items:center;gap:8px;margin:7px 0;font-size:12.5px}
-.ylabel{width:34px;text-align:right;color:var(--ink2);flex:none}
-.clabel{width:76px;text-align:right;color:var(--ink2);flex:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ytrack,.ctrack{flex:1;height:12px;background:var(--bg);border-radius:6px;overflow:hidden;border:1px solid var(--line)}
-.yfill{height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent));border-radius:6px}
-.cfill{height:100%;background:linear-gradient(90deg,#7aa8e0,#3f6fb5);border-radius:6px}
-.yval,.cval{width:86px;flex:none;color:var(--ink2)}
-.cval{width:56px;text-align:right}
-.controls{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(8px);padding:12px 0;border-bottom:1px solid var(--line);margin-bottom:18px}
-.controls .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.controls input[type=search],.controls select{background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:14px}
-.controls input[type=search]{flex:1;min-width:180px}
-.chip{border:1px solid var(--line);background:var(--panel);color:var(--ink2);border-radius:999px;padding:6px 14px;font-size:13px;cursor:pointer}
-.chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
-.btn.on{background:var(--accent);border-color:var(--accent);color:#fff}
-.countline{font-size:13px;color:var(--ink2);margin-left:auto}
-.btn{border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:7px 12px;font-size:13px;cursor:pointer}
-.btn:hover{border-color:var(--accent);color:var(--accent)}
-.records{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px}
-.record{display:flex;gap:14px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;box-shadow:var(--shadow);transition:transform .15s,box-shadow .15s}
-.record:hover{transform:translateY(-2px);box-shadow:0 3px 8px rgba(60,48,32,.12),0 8px 22px rgba(60,48,32,.1)}
-.cover{margin:0;flex:none;width:72px}
-.cover img{width:72px;height:98px;object-fit:cover;border-radius:6px;box-shadow:var(--shadow);display:block;background:var(--bg)}
-.cover img.cover-fail{visibility:hidden;height:0}
-.body{flex:1;min-width:0}
-.title{margin:0 0 2px;font-size:15.5px;font-family:Georgia,"Songti SC","SimSun",serif;line-height:1.4}
-.title a{color:var(--ink)}
-.meta{margin:0 0 8px;font-size:12.5px;color:var(--ink2);display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-.cat::before{content:"· ";margin-left:2px}
-.progwrap{display:flex;align-items:center;gap:8px;margin:2px 0 6px}
-.progbar{flex:1;height:8px;background:var(--bg);border:1px solid var(--line);border-radius:4px;overflow:hidden}
-.progbar span{display:block;height:100%;background:linear-gradient(90deg,var(--accent2),var(--accent))}
-.pct{font-size:12px;color:var(--ink2);width:38px;text-align:right;flex:none}
-.dates{margin:0;font-size:12px;color:var(--ink2);display:flex;flex-wrap:wrap;gap:10px}
-.dl::before{content:"🕐 ";opacity:.6}
-.record[data-status="finished"] .progbar span{background:linear-gradient(90deg,#69a46e,var(--fin))}
-.record[data-status="unread"] .progbar span{background:var(--line)}
-.notes{margin-top:10px;border-top:1px dashed var(--line);padding-top:8px}
-.notes summary{cursor:pointer;font-size:13px;color:var(--accent);font-weight:600;list-style:none}
-.notes summary::before{content:"▸ ";font-size:11px}
-.notes[open] summary::before{content:"▾ "}
-.notes summary::-webkit-details-marker{display:none}
-.notes h4{font-size:13px;margin:12px 0 6px;color:var(--ink2);font-weight:600}
-.thoughts,.highlights{list-style:none;margin:0;padding:0}
-.thoughts li,.highlights li{margin:0 0 10px;padding-left:10px;border-left:3px solid var(--accent2)}
-blockquote{margin:0;font-size:13px;color:var(--ink2);font-family:Georgia,"Songti SC","SimSun",serif}
-.tquote{margin:0 0 4px;font-size:13px;color:var(--ink2);font-family:Georgia,"Songti SC","SimSun",serif}
-.ttext{margin:4px 0 2px;font-size:13.5px;white-space:pre-wrap}
-.tmeta,.hmeta{margin:2px 0 0;font-size:11.5px;color:var(--ink2);opacity:.85}
-footer{margin-top:40px;text-align:center;font-size:12px;color:var(--ink2)}
-@media (max-width:560px){
-  .wrap{padding:16px 12px 40px}
-  .hero h1{font-size:26px}
-  .records{grid-template-columns:1fr}
-  .countline{margin-left:0;width:100%}
-}
+{{ partial "reading/styles.html" . | safeCSS }}
 </style>
 </head>
 <body>
 <div class="wrap">
 <header class="hero">
   <h1>我的阅读记录</h1>
-  <p>微信读书 · 书架与笔记全览</p>
-  <p class="src">数据快照 {{ $data.generated }} · <a href="{{ .Site.Home.RelPermalink }}">← 返回 {{ .Site.Title }}</a></p>
+  <p class="sub">微信读书 · {{ $total }} 本藏书</p>
+  <p class="meta">
+    {{- with $stats.readDays }}<span>阅读 {{ . }} 天</span><span class="dot">·</span>{{ end -}}
+    {{- with $stats.totalReadTimeText }}<span>累计 {{ . }}</span><span class="dot">·</span>{{ end -}}
+    {{- if $data.generatedAt }}<span>同步于 {{ (time.AsTime $data.generatedAt).Format "2006-01-02 15:04" }}</span><span class="dot">·</span>{{ end -}}
+    {{- with site.Data.history }}<a href="{{ "reading-history/" | relURL }}">历史阅读 {{ .count }} 本</a><span class="dot">·</span>{{ end -}}
+    <a href="{{ .Site.Home.RelPermalink }}">返回 {{ .Site.Title }}</a>
+  </p>
+  <div class="rule" aria-hidden="true"></div>
 </header>
 
-<section class="stats" aria-label="阅读统计概览">
-  {{- range $data.stats }}
-  <div class="stat"><b>{{ .value }}</b><span>{{ .label }}</span></div>
+{{- if not $books }}
+<div class="empty">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+  <b>阅读数据尚未同步</b>
+  <p>运行 <code>py scripts/weread/sync.py</code> 生成数据后再发布。</p>
+</div>
+{{- else }}
+
+<section class="stats" aria-label="分类概览">
+  {{- range $cats }}
+  <button type="button" class="stat" data-goto="{{ .key }}" aria-pressed="false" aria-label="查看{{ .label }}，共 {{ len .list }} 本">
+    <b>{{ len .list }}</b><span>{{ .label }}</span>
+  </button>
   {{- end }}
 </section>
 
-<section class="charts" aria-label="阅读偏好图表">
-  <div class="panel"><h2>年度阅读时长</h2><div class="ybars">
-    {{- range $data.years }}
-    <div class="ybar"><span class="ylabel">{{ .year }}</span><div class="ytrack"><div class="yfill" style="width:{{ .width }}%"></div></div><span class="yval">{{ .text }}</span></div>
-    {{- end }}
-  </div></div>
-  <div class="panel"><h2>偏好分类 TOP 7</h2><div class="cbars">
-    {{- range $data.top_categories }}
-    <div class="cbar"><span class="clabel">{{ .name }}</span><div class="ctrack"><div class="cfill" style="width:{{ .width }}%"></div></div><span class="cval">{{ .text }}</span></div>
-    {{- end }}
-  </div></div>
-</section>
-
-<div class="controls" role="search">
-  <div class="row">
-    <input type="search" id="q" placeholder="搜索书名或作者…" aria-label="搜索书名或作者">
-    <select id="sort" aria-label="排序方式">
-      <option value="recent">最近阅读 ↓</option>
-      <option value="status">按状态（读完→在读→未读）</option>
-      <option value="added">入架时间 ↓</option>
-      <option value="progress">阅读进度 ↓</option>
-      <option value="notes">笔记数量 ↓</option>
-      <option value="title">书名 A→Z</option>
-    </select>
-    <select id="cat" aria-label="分类筛选"><option value="">全部分类</option>{{- range $data.categories }}<option value="{{ .value }}">{{ .label }}</option>{{- end }}</select>
-    <button class="chip on" data-f="all">全部</button>
-    <button class="chip" data-f="finished">已读完</button>
-    <button class="chip" data-f="reading">在读</button>
-    <button class="chip" data-f="unread">未开始</button>
-    <button class="btn" id="onlyNotes">仅有笔记</button>
-    <button class="btn" id="expandAll">展开全部备注</button>
-    <span class="countline" id="count"></span>
+<div class="toolbar">
+  <div class="toolbar-inner">
+    <div class="tabs" role="tablist" aria-label="阅读状态分类">
+      {{- range $cats }}
+      <button type="button" class="tab" role="tab" data-tab="{{ .key }}" id="tab-{{ .key }}" aria-controls="panel-{{ .key }}" aria-selected="{{ if eq .key "reading" }}true{{ else }}false{{ end }}" tabindex="{{ if eq .key "reading" }}0{{ else }}-1{{ end }}">
+        <span class="dot" aria-hidden="true"></span>{{ .label }}<span class="n">{{ len .list }}</span>
+      </button>
+      {{- end }}
+    </div>
+    <div class="filters">
+      <label class="search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2"/></svg>
+        <input type="search" id="q" placeholder="搜索书名或作者…" aria-label="搜索书名或作者" autocomplete="off">
+      </label>
+      <select class="year" id="year" aria-label="按年份筛选">
+        <option value="">全部年份</option>
+        {{- range $years }}<option value="{{ . }}">{{ . }} 年</option>{{ end }}
+      </select>
+      <button type="button" class="btn" id="reset" hidden>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
+        重置
+      </button>
+    </div>
   </div>
 </div>
 
-<main class="records" id="records">
-{{- range $b := $data.books }}
-  <article class="record" data-status="{{ $b.status }}" data-last="{{ $b.last_ts }}" data-added="{{ $b.added_ts }}" data-progress="{{ $b.progress }}" data-notes="{{ $b.notes_count }}" data-cat="{{ $b.category }}" data-title="{{ $b.title }}" data-author="{{ $b.author }}">
-    <figure class="cover">{{ with $b.cover }}<img src="{{ . }}" alt="封面" loading="lazy" referrerpolicy="no-referrer" onerror="this.classList.add('cover-fail')">{{ end }}</figure>
-    <div class="body">
-      <h3 class="title">{{ with $b.link }}<a href="{{ . }}" target="_blank" rel="noopener">{{ $b.title }}</a>{{ else }}{{ $b.title }}{{ end }}</h3>
-      <p class="meta">{{ if $b.author }}{{ $b.author }}{{ else }}佚名{{ end }}{{ with $b.subcategory }}<span class="cat">{{ . }}</span>{{ end }}</p>
-      <div class="progwrap"><div class="progbar"><span style="width:{{ $b.progress }}%"></span></div><span class="pct">{{ $b.progress }}%</span></div>
-      <p class="dates">
-        {{- if eq $b.status "finished" }}{{ with $b.last_read }}<span class="dl">读完于 <time datetime="{{ . }}">{{ . }}</time></span>{{ end }}
-        {{- else }}{{ with $b.last_read }}<span class="dl">最近阅读 <time datetime="{{ . }}">{{ . }}</time></span>{{ end }}
-        {{- end }}{{ with $b.added }}<span class="dl">入架 {{ . }}</span>{{ end }}
-      </p>
-      {{- if or $b.thoughts $b.highlights }}
-      <details class="notes">
-        <summary>个人备注（想法 {{ len $b.thoughts }} · 划线 {{ len $b.highlights }}）</summary>
-        {{- with $b.thoughts }}
-        <h4>想法（{{ len . }}）</h4>
-        <ul class="thoughts">
-          {{- range . }}
-          <li class="thought">{{ with .quote }}<blockquote class="tquote">{{ . }}</blockquote>{{ end }}{{ with .text }}<p class="ttext">{{ . }}</p>{{ end }}<p class="tmeta">{{ with .chapter }}{{ . }} · {{ end }}{{ .date }}</p></li>
-          {{- end }}
-        </ul>
-        {{- end }}
-        {{- with $b.highlights }}
-        <h4>划线（{{ len . }}）</h4>
-        <ul class="highlights">
-          {{- range . }}
-          <li class="highlight"><blockquote>{{ .text }}</blockquote><p class="hmeta">{{ with .chapter }}{{ . }} · {{ end }}{{ .date }}</p></li>
-          {{- end }}
-        </ul>
-        {{- end }}
-      </details>
-      {{- end }}
+<noscript><p class="noscript">当前显示「在读」分类；启用 JavaScript 后可切换分类、按年份筛选与搜索。</p></noscript>
+
+<div class="result-bar">
+  <p class="count" id="count" aria-live="polite"></p>
+  <div class="chips" id="chips"></div>
+</div>
+
+<main>
+{{- range $cats }}
+  {{- $cat := . }}
+  <section class="panel" id="panel-{{ $cat.key }}" role="tabpanel" aria-labelledby="tab-{{ $cat.key }}" data-panel="{{ $cat.key }}" data-label="{{ $cat.label }}" {{ if ne $cat.key "reading" }}hidden{{ end }}>
+    <div class="panel-head">
+      <h2>{{ $cat.label }}</h2>
+      <small>{{ len $cat.list }} 本 · {{ $cat.hint }}</small>
     </div>
-  </article>
+    <div class="cards">
+    {{- range $item := $cat.list }}
+      {{- $b := $item.b }}
+      <article class="card" data-status="{{ $cat.key }}" data-year="{{ $item.year }}" data-title="{{ $b.title }}" data-author="{{ $b.author }}">
+        <figure class="cover{{ if not $b.cover }} noimg{{ end }}" data-initial="{{ substr $b.title 0 1 }}">
+          {{- with $b.cover }}
+          <img src="{{ . }}" alt="《{{ $b.title }}》封面" loading="lazy" decoding="async" referrerpolicy="no-referrer" onload="this.classList.add('ok')" onerror="this.closest('.cover').classList.add('noimg');this.remove()">
+          {{- end }}
+        </figure>
+        <div class="body">
+          <h3 class="title">
+            {{- if $b.link }}<a href="{{ $b.link }}" target="_blank" rel="noopener">{{ $b.title }}</a>{{ else }}{{ $b.title }}{{ end -}}
+          </h3>
+          <p class="meta">
+            <span class="author">{{ with $b.author }}{{ . }}{{ else }}佚名{{ end }}</span>
+            <span class="badge {{ $cat.key }}">{{ $cat.label }}</span>
+          </p>
+
+          {{- if or (eq $cat.key "reading") (eq $cat.key "planned") }}
+          <div class="prog"><div class="track"><span class="fill" style="width:{{ $b.progress }}%"></span></div><span class="pct">{{ $b.progress }}%</span></div>
+          {{- end }}
+
+          <p class="dates">
+            {{- if eq $cat.key "finished" }}
+              {{- with $b.finishDate }}<span>读完于 <time datetime="{{ . }}">{{ . }}</time></span>{{ else }}<span>已标记读完</span>{{ end }}
+            {{- else if eq $cat.key "reading" }}
+              {{- with $b.startDate }}<span>开始于 <time datetime="{{ . }}">{{ . }}</time></span><span class="sep">·</span>{{ end }}
+              {{- with $b.lastReadDate }}<span>最近阅读 <time datetime="{{ . }}">{{ . }}</time></span>{{ end }}
+            {{- else if eq $cat.key "planned" }}
+              {{- with $b.lastReadDate }}<span>最后阅读 <time datetime="{{ . }}">{{ . }}</time></span><span class="sep">·</span>{{ end }}
+              <span>已停滞 {{ $item.stale }} 天</span>
+            {{- else }}
+              <span>尚未开始</span>
+            {{- end }}
+          </p>
+
+          {{- with $b.review }}
+          <p class="review">{{ . }}</p>
+          {{- end }}
+
+          {{- $notes := $b.notes }}
+          {{- if and $notes (or $notes.thoughts $notes.highlights) }}
+          <p class="notes">笔记 {{ add $notes.thoughts $notes.highlights }} 条{{ if $notes.highlights }} · 划线 {{ $notes.highlights }}{{ end }}</p>
+          {{- end }}
+        </div>
+      </article>
+    {{- end }}
+    </div>
+    <button type="button" class="more" hidden>显示更多</button>
+  </section>
 {{- end }}
 </main>
 
-<footer>
-  <p>状态依据书架读完标记与阅读进度推导 · 进度为接口返回的最近一次同步值 · 封面图片来自微信读书 CDN，需联网显示</p>
-  <p>更新方式：运行 <code>py scripts/weread_sync.py 快照.html</code> 重新生成数据后发布</p>
+<div class="empty" id="empty" hidden role="status">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M9 7h7"/></svg>
+  <b>没有符合条件的书</b>
+  <p id="empty-desc"></p>
+  <div class="empty-actions">
+    <button type="button" class="btn" id="empty-year" hidden>清除年份筛选</button>
+    <button type="button" class="btn primary" id="empty-reset">重置全部筛选</button>
+  </div>
+</div>
+
+<footer class="foot">
+  <p>分类口径：已读 = 完成标记或进度 100%；准备读 = 在读但超过 {{ $abandonDays }} 天无阅读记录，每次构建自动重算。</p>
+  <p>数据同步：<code>py scripts/weread/sync.py</code> · 封面来自微信读书 CDN · 进度为最近一次同步值</p>
 </footer>
+{{- end }}
 </div>
 
 <script>
-(function(){
-  var records = Array.prototype.slice.call(document.querySelectorAll('.record'));
-  var q = document.getElementById('q'), sort = document.getElementById('sort'),
-      cat = document.getElementById('cat'), count = document.getElementById('count'),
-      onlyNotes = document.getElementById('onlyNotes'), chips = document.querySelectorAll('.chip');
-  var filter = 'all', notesOnly = false;
+(function () {
+  'use strict';
 
-  function apply(){
-    var kw = q.value.trim().toLowerCase(), c = cat.value;
-    var shown = 0;
-    records.forEach(function(el){
-      var ok = true;
-      if (filter !== 'all' && el.dataset.status !== filter) ok = false;
-      if (ok && notesOnly && el.dataset.notes === '0') ok = false;
-      if (ok && c && el.dataset.cat !== c) ok = false;
-      if (ok && kw && (el.dataset.title + ' ' + el.dataset.author).indexOf(kw) === -1) ok = false;
-      el.style.display = ok ? '' : 'none';
-      if (ok) shown++;
-    });
-    count.textContent = '显示 ' + shown + ' / ' + records.length + ' 条';
-    sortRecords();
+  var PAGE = 60;
+  var DEFAULT_STATUS = 'reading';
+  var STATUSES = ['reading', 'finished', 'want', 'planned'];
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  var panels = {};
+  Array.prototype.forEach.call(document.querySelectorAll('[data-panel]'), function (p) {
+    panels[p.dataset.panel] = p;
+  });
+  var tabs = Array.prototype.slice.call(document.querySelectorAll('[data-tab]'));
+  var stats = Array.prototype.slice.call(document.querySelectorAll('[data-goto]'));
+  var yearSel = document.getElementById('year');
+  var search = document.getElementById('q');
+  var resetBtn = document.getElementById('reset');
+  var countEl = document.getElementById('count');
+  var chipsEl = document.getElementById('chips');
+  var emptyEl = document.getElementById('empty');
+  var emptyDesc = document.getElementById('empty-desc');
+  var emptyReset = document.getElementById('empty-reset');
+  var emptyYear = document.getElementById('empty-year');
+
+  if (!panels[DEFAULT_STATUS]) return;
+
+  var state = { status: DEFAULT_STATUS, year: '', q: '', shown: {} };
+  STATUSES.forEach(function (s) { state.shown[s] = PAGE; });
+
+  function cardsOf(status) {
+    return Array.prototype.slice.call(panels[status].querySelectorAll('.card'));
   }
 
-  function sortRecords(){
-    var mode = sort.value;
-    var arr = records.filter(function(el){ return el.style.display !== 'none'; });
-    var parent = document.getElementById('records');
-    arr.sort(function(a, b){
-      var x, y;
-      if (mode === 'title') { x = a.dataset.title; y = b.dataset.title; return x.localeCompare(y, 'zh-Hans-CN'); }
-      if (mode === 'progress') { x = +a.dataset.progress; y = +b.dataset.progress; return y - x; }
-      if (mode === 'notes') { x = +a.dataset.notes; y = +b.dataset.notes; return y - x; }
-      if (mode === 'added') { x = +a.dataset.added; y = +b.dataset.added; return y - x; }
-      if (mode === 'status') {
-        var order = {finished: 0, reading: 1, unread: 2};
-        x = order[a.dataset.status]; y = order[b.dataset.status];
-        if (x !== y) return x - y;
-        return (+b.dataset.last) - (+a.dataset.last);
-      }
-      x = +a.dataset.last || 0; y = +b.dataset.last || 0; return y - x;
-    });
-    arr.forEach(function(el){ parent.appendChild(el); });
+  function readUrl() {
+    var params;
+    try { params = new URLSearchParams(location.search); } catch (e) { params = null; }
+    if (!params) return;
+    var s = params.get('status');
+    if (STATUSES.indexOf(s) !== -1) state.status = s;
+    var y = params.get('year') || '';
+    if (y && yearSel && yearSel.querySelector('option[value="' + y + '"]')) state.year = y;
   }
 
-  chips.forEach(function(ch){
-    ch.addEventListener('click', function(){
-      chips.forEach(function(x){ x.classList.remove('on'); });
-      ch.classList.add('on');
-      filter = ch.dataset.f;
-      apply();
+  function writeUrl() {
+    var params = new URLSearchParams();
+    if (state.status !== DEFAULT_STATUS) params.set('status', state.status);
+    if (state.year) params.set('year', state.year);
+    var qs = params.toString();
+    try {
+      history.replaceState(null, '', qs ? location.pathname + '?' + qs : location.pathname);
+    } catch (e) { /* file:// 等环境忽略 */ }
+  }
+
+  function makeChip(label, onRemove, aria) {
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'chip';
+    b.setAttribute('aria-label', aria);
+    b.appendChild(document.createTextNode(label));
+    var x = document.createElement('i');
+    x.setAttribute('aria-hidden', 'true');
+    x.textContent = '×';
+    b.appendChild(x);
+    b.addEventListener('click', onRemove);
+    return b;
+  }
+
+  function renderChips() {
+    if (!chipsEl) return;
+    chipsEl.innerHTML = '';
+    if (state.year) {
+      chipsEl.appendChild(makeChip(state.year + ' 年', function () {
+        state.year = '';
+        if (yearSel) yearSel.value = '';
+        state.shown[state.status] = PAGE;
+        writeUrl();
+        apply(true);
+      }, '移除年份筛选：' + state.year + ' 年'));
+    }
+    var kw = state.q.trim();
+    if (kw) {
+      chipsEl.appendChild(makeChip('“' + kw + '”', function () {
+        state.q = '';
+        if (search) search.value = '';
+        state.shown[state.status] = PAGE;
+        apply(true);
+      }, '移除搜索关键词：' + kw));
+    }
+  }
+
+  function updateEmpty(matched, total) {
+    if (!emptyEl) return;
+    var label = (panels[state.status] && panels[state.status].dataset.label) || '';
+    var conds = [];
+    if (state.year) conds.push(state.year + ' 年');
+    if (state.q.trim()) conds.push('包含“' + state.q.trim() + '”');
+    emptyDesc.textContent = conds.length
+      ? '在「' + label + '」中，没有找到同时满足「' + conds.join('、') + '」的书。可以换个年份，或重置筛选查看全部。'
+      : '「' + label + '」中暂时没有书。';
+    emptyYear.hidden = !state.year;
+    emptyEl.hidden = matched !== 0;
+  }
+
+  function apply(animate) {
+    var kw = state.q.trim().toLowerCase();
+    var total = 0;
+    var matched = 0;
+    var limit = state.shown[state.status];
+
+    STATUSES.forEach(function (s) {
+      if (!panels[s]) return;
+      if (s !== state.status) panels[s].hidden = true;
+    });
+
+    var panel = panels[state.status];
+    var list = cardsOf(state.status);
+    total = list.length;
+
+    list.forEach(function (card) {
+      var okYear = !state.year || card.dataset.year === state.year;
+      var okKw = !kw || (card.dataset.title + ' ' + card.dataset.author).toLowerCase().indexOf(kw) !== -1;
+      var ok = okYear && okKw;
+      if (ok) matched++;
+      card.hidden = !(ok && matched <= limit);
+    });
+
+    panel.hidden = matched === 0;
+
+    var more = panel.querySelector('.more');
+    if (more) {
+      more.hidden = matched <= limit;
+      more.textContent = '显示更多（还有 ' + Math.max(0, matched - limit) + ' 本）';
+    }
+
+    var shown = Math.min(matched, limit);
+    countEl.textContent = (matched === total ? '共 ' + total + ' 本' : '筛选出 ' + matched + ' 本 / 共 ' + total + ' 本') + ' · 已显示 ' + shown + ' 本';
+
+    tabs.forEach(function (t) {
+      var on = t.dataset.tab === state.status;
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+      t.tabIndex = on ? 0 : -1;
+    });
+    stats.forEach(function (s) {
+      s.setAttribute('aria-pressed', s.dataset.goto === state.status ? 'true' : 'false');
+    });
+    if (resetBtn) resetBtn.hidden = !(state.status !== DEFAULT_STATUS || state.year || state.q);
+
+    renderChips();
+    updateEmpty(matched, total);
+
+    if (animate && !reduceMotion) {
+      panel.classList.remove('is-enter');
+      void panel.offsetWidth;
+      panel.classList.add('is-enter');
+    }
+  }
+
+  function setStatus(status, animate) {
+    if (STATUSES.indexOf(status) === -1) return;
+    state.status = status;
+    writeUrl();
+    apply(animate !== false);
+  }
+
+  tabs.forEach(function (tab, index) {
+    tab.addEventListener('click', function () { setStatus(tab.dataset.tab); });
+    tab.addEventListener('keydown', function (e) {
+      var next = -1;
+      if (e.key === 'ArrowRight') next = (index + 1) % tabs.length;
+      else if (e.key === 'ArrowLeft') next = (index - 1 + tabs.length) % tabs.length;
+      else if (e.key === 'Home') next = 0;
+      else if (e.key === 'End') next = tabs.length - 1;
+      if (next === -1) return;
+      e.preventDefault();
+      tabs[next].focus();
+      setStatus(tabs[next].dataset.tab);
     });
   });
-  q.addEventListener('input', apply);
-  cat.addEventListener('change', apply);
-  sort.addEventListener('change', apply);
-  onlyNotes.addEventListener('click', function(){
-    notesOnly = !notesOnly;
-    this.classList.toggle('on');
-    apply();
+
+  stats.forEach(function (s) {
+    s.addEventListener('click', function () { setStatus(s.dataset.goto); });
   });
-  document.getElementById('expandAll').addEventListener('click', function(){
-    var details = document.querySelectorAll('.notes');
-    var anyClosed = Array.prototype.some.call(details, function(d){ return !d.open; });
-    details.forEach(function(d){ d.open = anyClosed; });
-    this.textContent = anyClosed ? '收起全部备注' : '展开全部备注';
+
+  if (yearSel) {
+    yearSel.addEventListener('change', function () {
+      state.year = yearSel.value;
+      state.shown[state.status] = PAGE;
+      writeUrl();
+      apply(true);
+    });
+  }
+
+  var timer = null;
+  if (search) {
+    search.addEventListener('input', function () {
+      clearTimeout(timer);
+      var value = search.value;
+      if (value.trim() !== state.q.trim()) countEl.textContent = '搜索中…';
+      timer = setTimeout(function () {
+        state.q = value;
+        state.shown[state.status] = PAGE;
+        apply(true);
+      }, 160);
+    });
+  }
+
+  function resetAll() {
+    state.status = DEFAULT_STATUS;
+    state.year = '';
+    state.q = '';
+    if (yearSel) yearSel.value = '';
+    if (search) search.value = '';
+    STATUSES.forEach(function (s) { state.shown[s] = PAGE; });
+    writeUrl();
+    apply(true);
+    var active = tabs.filter(function (t) { return t.dataset.tab === DEFAULT_STATUS; })[0];
+    if (active) active.focus();
+  }
+
+  if (resetBtn) resetBtn.addEventListener('click', resetAll);
+  if (emptyReset) emptyReset.addEventListener('click', resetAll);
+  if (emptyYear) emptyYear.addEventListener('click', function () {
+    state.year = '';
+    if (yearSel) yearSel.value = '';
+    state.shown[state.status] = PAGE;
+    writeUrl();
+    apply(true);
   });
-  apply();
+
+  Array.prototype.forEach.call(document.querySelectorAll('.more'), function (btn) {
+    btn.addEventListener('click', function () {
+      var panel = btn.closest('[data-panel]');
+      if (!panel) return;
+      var status = panel.dataset.panel;
+      var before = cardsOf(status).filter(function (c) { return !c.hidden; }).length;
+      btn.dataset.loading = 'true';
+      btn.textContent = '加载中…';
+      setTimeout(function () {
+        state.shown[status] += PAGE;
+        apply(false);
+        btn.dataset.loading = 'false';
+        if (!reduceMotion) {
+          var seen = 0;
+          cardsOf(status).forEach(function (c) {
+            if (c.hidden) return;
+            seen++;
+            if (seen > before) c.classList.add('is-new');
+          });
+          setTimeout(function () {
+            Array.prototype.forEach.call(panel.querySelectorAll('.card.is-new'), function (c) {
+              c.classList.remove('is-new');
+            });
+          }, 400);
+        }
+      }, 160);
+    });
+  });
+
+  readUrl();
+  if (yearSel) yearSel.value = state.year;
+  apply(false);
 })();
 </script>
 </body>
