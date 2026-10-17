@@ -1,0 +1,81 @@
+name: weread-sync
+
+# 每天同步一次微信读书数据并部署。
+# 注意：用 GITHUB_TOKEN 推送的提交不会触发 hugo_deploy.yaml，
+# 所以这里直接构建 + 部署，保证数据更新后页面一定上线。
+
+on:
+  schedule:
+    - cron: "0 19 * * *"   # UTC 19:00 = 北京时间 03:00
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: weread-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Sync WeRead data
+        id: sync
+        continue-on-error: true
+        env:
+          WEREAD_API_KEY: ${{ secrets.WEREAD_API_KEY }}
+        run: python scripts/weread/sync.py
+
+      - name: Sync reading history
+        id: history
+        continue-on-error: true
+        env:
+          WEREAD_API_KEY: ${{ secrets.WEREAD_API_KEY }}
+        run: python scripts/weread/history.py
+
+      - name: Report sync failure
+        if: steps.sync.outcome == 'failure' || steps.history.outcome == 'failure'
+        run: echo "::warning::微信读书同步失败，继续用上一次的数据构建"
+
+      - name: Commit data
+        if: steps.sync.outcome == 'success' || steps.history.outcome == 'success'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add content/page/reading/books.json
+          if [ -f data/history.json ]; then git add data/history.json; fi
+          if git diff --staged --quiet; then
+            echo "数据无变化"
+          else
+            git commit -m "reading: auto sync $(date -u +%Y-%m-%d)"
+            git push
+          fi
+
+      - name: Setup Hugo
+        uses: peaceiris/actions-hugo@v3
+        with:
+          hugo-version: "latest"
+          extended: true
+
+      - name: Build
+        run: hugo -e stack
+
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          PERSONAL_TOKEN: ${{ secrets.TOKEN }}
+          EXTERNAL_REPOSITORY: bxycode000/bxycode000.github.io
+          PUBLISH_BRANCH: main
+          PUBLISH_DIR: ./public
+          commit_message: auto deploy (reading sync)
