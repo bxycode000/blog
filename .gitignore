@@ -8,3 +8,7 @@ hugo.exe
 
 # 本地工具状态
 .mimosa
+
+# 微信读书同步缓存（增量拉取用，不进仓库）
+.cache/weread/
+__pycache__/
