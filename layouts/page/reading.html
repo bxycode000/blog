@@ -145,6 +145,16 @@
         <option value="">全部年份</option>
         {{- range $years }}<option value="{{ . }}">{{ . }} 年</option>{{ end }}
       </select>
+      <select class="year" id="sort" aria-label="排序方式">
+        <option value="default">默认排序</option>
+        <option value="time">按时间</option>
+        <option value="title">按书名</option>
+        <option value="progress">按进度</option>
+      </select>
+      <button type="button" class="btn" id="dir" hidden aria-label="切换排序方向">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" style="transition:transform .18s ease"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></svg>
+        <span>方向</span>
+      </button>
       <button type="button" class="btn" id="reset" hidden>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>
         重置
@@ -171,7 +181,7 @@
     <div class="cards">
     {{- range $item := $cat.list }}
       {{- $b := $item.b }}
-      <article class="card" data-status="{{ $cat.key }}" data-year="{{ $item.year }}" data-title="{{ $b.title }}" data-author="{{ $b.author }}">
+      <article class="card" data-status="{{ $cat.key }}" data-year="{{ $item.year }}" data-progress="{{ $b.progress }}" data-ts="{{ $item.sortTs }}" data-title="{{ $b.title }}" data-author="{{ $b.author }}">
         <figure class="cover{{ if not $b.cover }} noimg{{ end }}" data-initial="{{ substr $b.title 0 1 }}">
           {{- with $b.cover }}
           <img src="{{ . }}" alt="《{{ $b.title }}》封面" loading="lazy" decoding="async" referrerpolicy="no-referrer" onload="this.classList.add('ok')" onerror="this.closest('.cover').classList.add('noimg');this.remove()">
@@ -258,6 +268,8 @@
   var tabs = Array.prototype.slice.call(document.querySelectorAll('[data-tab]'));
   var stats = Array.prototype.slice.call(document.querySelectorAll('[data-goto]'));
   var yearSel = document.getElementById('year');
+  var sortSel = document.getElementById('sort');
+  var dirBtn = document.getElementById('dir');
   var search = document.getElementById('q');
   var resetBtn = document.getElementById('reset');
   var countEl = document.getElementById('count');
@@ -269,11 +281,70 @@
 
   if (!panels[DEFAULT_STATUS]) return;
 
-  var state = { status: DEFAULT_STATUS, year: '', q: '', shown: {} };
+  var SORT_FIELDS = ['time', 'title', 'progress'];
+  var DEFAULT_DIR = { time: 'desc', title: 'asc', progress: 'desc' };
+  var DIR_LABEL = {
+    time: { desc: '新→旧', asc: '旧→新' },
+    title: { asc: 'A→Z', desc: 'Z→A' },
+    progress: { desc: '高→低', asc: '低→高' }
+  };
+
+  var state = { status: DEFAULT_STATUS, year: '', q: '', sort: 'default', dir: 'desc', shown: {} };
   STATUSES.forEach(function (s) { state.shown[s] = PAGE; });
 
   function cardsOf(status) {
     return Array.prototype.slice.call(panels[status].querySelectorAll('.card'));
+  }
+
+  var origOrder = {};
+  STATUSES.forEach(function (s) { if (panels[s]) origOrder[s] = cardsOf(s); });
+
+  function sortedCards(status) {
+    var list = origOrder[status].slice();
+    var f = state.sort;
+    if (f === 'default') return list;
+    var dir = state.dir === 'asc' ? 1 : -1;
+    var order = origOrder[status];
+    list.sort(function (a, b) {
+      var r;
+      if (f === 'time') {
+        r = ((+a.dataset.ts || 0) - (+b.dataset.ts || 0)) * dir;
+      } else if (f === 'title') {
+        r = String(a.dataset.title).localeCompare(String(b.dataset.title), 'zh-Hans-CN') * dir;
+      } else {
+        // 按进度：未设置进度(0)的书籍固定沉底，不随方向翻转
+        var pa = +a.dataset.progress || 0;
+        var pb = +b.dataset.progress || 0;
+        if (!pa && !pb) r = 0;
+        else if (!pa) r = 1;
+        else if (!pb) r = -1;
+        else r = (pa - pb) * dir;
+      }
+      if (!r) r = order.indexOf(a) - order.indexOf(b);
+      return r;
+    });
+    return list;
+  }
+
+  function reorderDom() {
+    STATUSES.forEach(function (s) {
+      if (!panels[s]) return;
+      var grid = panels[s].querySelector('.cards');
+      sortedCards(s).forEach(function (c) { grid.appendChild(c); });
+    });
+  }
+
+  function updateDirBtn() {
+    if (!dirBtn) return;
+    var on = state.sort !== 'default';
+    dirBtn.hidden = !on;
+    if (!on) return;
+    var label = DIR_LABEL[state.sort][state.dir];
+    var span = dirBtn.querySelector('span');
+    if (span) span.textContent = label;
+    dirBtn.setAttribute('aria-label', '切换排序方向，当前：' + label);
+    var svg = dirBtn.querySelector('svg');
+    if (svg) svg.style.transform = state.dir === 'asc' ? 'rotate(180deg)' : '';
   }
 
   function readUrl() {
@@ -284,12 +355,23 @@
     if (STATUSES.indexOf(s) !== -1) state.status = s;
     var y = params.get('year') || '';
     if (y && yearSel && yearSel.querySelector('option[value="' + y + '"]')) state.year = y;
+    var so = params.get('sort');
+    if (SORT_FIELDS.indexOf(so) !== -1) {
+      state.sort = so;
+      state.dir = DEFAULT_DIR[so];
+    }
+    var di = params.get('dir');
+    if (state.sort !== 'default' && (di === 'asc' || di === 'desc')) state.dir = di;
   }
 
   function writeUrl() {
     var params = new URLSearchParams();
     if (state.status !== DEFAULT_STATUS) params.set('status', state.status);
     if (state.year) params.set('year', state.year);
+    if (state.sort !== 'default') {
+      params.set('sort', state.sort);
+      if (state.dir !== DEFAULT_DIR[state.sort]) params.set('dir', state.dir);
+    }
     var qs = params.toString();
     try {
       history.replaceState(null, '', qs ? location.pathname + '?' + qs : location.pathname);
@@ -435,6 +517,28 @@
     });
   }
 
+  if (sortSel) {
+    sortSel.addEventListener('change', function () {
+      state.sort = sortSel.value;
+      state.dir = state.sort === 'default' ? 'desc' : DEFAULT_DIR[state.sort];
+      state.shown[state.status] = PAGE;
+      updateDirBtn();
+      reorderDom();
+      writeUrl();
+      apply(true);
+    });
+  }
+
+  if (dirBtn) {
+    dirBtn.addEventListener('click', function () {
+      state.dir = state.dir === 'asc' ? 'desc' : 'asc';
+      updateDirBtn();
+      reorderDom();
+      writeUrl();
+      apply(true);
+    });
+  }
+
   var timer = null;
   if (search) {
     search.addEventListener('input', function () {
@@ -453,8 +557,13 @@
     state.status = DEFAULT_STATUS;
     state.year = '';
     state.q = '';
+    state.sort = 'default';
+    state.dir = 'desc';
     if (yearSel) yearSel.value = '';
     if (search) search.value = '';
+    if (sortSel) sortSel.value = 'default';
+    updateDirBtn();
+    reorderDom();
     STATUSES.forEach(function (s) { state.shown[s] = PAGE; });
     writeUrl();
     apply(true);
@@ -503,6 +612,9 @@
 
   readUrl();
   if (yearSel) yearSel.value = state.year;
+  if (sortSel) sortSel.value = state.sort;
+  updateDirBtn();
+  if (state.sort !== 'default') reorderDom();
   apply(false);
 })();
 </script>
