@@ -1,19 +1,20 @@
+{{/* 站点定制（Phase 0）：分类云由无封面的磁贴改为胶囊行，避免 250×150 空白卡片 */}}
 {{ define "body-class" }}template-archives{{ end }}
 {{ define "main" }}
-    <header>
-        {{- $taxonomy := $.Site.GetPage "taxonomyTerm" "categories" -}}
-        {{- $terms := $taxonomy.Pages -}}
-        {{ if $terms }}
+    {{- $taxonomy := $.Site.GetPage "taxonomyTerm" "categories" -}}
+    {{- $terms := $taxonomy.Pages -}}
+    {{- if $terms }}
+    <header class="archives-header">
         <h2 class="section-title">{{ T "widget.categoriesCloud.title" }}</h2>
-        <div class="subsection-list">
-            <div class="article-list--tile">
-                {{ range $terms }}
-                    {{ partial "article-list/tile" . }}
-                {{ end }}
-            </div>
+        <div class="taxonomy-chips">
+            {{- range $terms }}
+            <a class="taxonomy-chip" href="{{ .RelPermalink }}">
+                {{ .LinkTitle }}<span class="count">{{ len .Pages }}</span>
+            </a>
+            {{- end }}
         </div>
-        {{ end }}
     </header>
+    {{- end }}
 
     {{ $pages := partial "helper/pages.html" .Site.Home }}
 

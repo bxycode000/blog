@@ -1,0 +1,67 @@
+/* =========================================================
+   Phase 0 修复补充样式
+   仅处理：文章行长、归档分类胶囊、相关文章列表间距
+   不改主题配色与字体（留给 Phase 1）
+   ========================================================= */
+
+/* 1. 文章正文行长：桌面端主栏收至 780px，正文 720px（约 42 字/行）
+   保留卡片左边缘与侧栏菜单对齐，不使用居中，避免破坏三栏节奏 */
+@media (min-width: 1024px) {
+    body.article-page main.main {
+        max-width: 780px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+body.article-page .article-header,
+body.article-page .article-content,
+body.article-page .article-footer {
+    max-width: 720px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* 2. 归档页分类：用胶囊行替代无封面的磁贴 */
+.archives-header {
+    margin-bottom: var(--section-separation);
+}
+
+.taxonomy-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: var(--spacing-sm, 10px);
+}
+
+.taxonomy-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 13px;
+    border: 1px solid var(--card-separator-color);
+    border-radius: 999px;
+    background: var(--card-background);
+    color: var(--card-text-color-main);
+    font-size: 1.3rem;
+    line-height: 1.5;
+    text-decoration: none;
+    transition: border-color .15s ease, color .15s ease;
+}
+
+.taxonomy-chip:hover {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+    text-decoration: none;
+}
+
+.taxonomy-chip .count {
+    font-size: 1.1rem;
+    color: var(--card-text-color-tertiary);
+    font-variant-numeric: tabular-nums;
+}
+
+/* 3. 相关文章：紧凑列表与标题的间距 */
+.related-content .related-content-list {
+    margin-top: var(--spacing-sm, 10px);
+}

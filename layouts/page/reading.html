@@ -96,18 +96,73 @@
 <style>
 {{ partial "reading/styles.html" . | safeCSS }}
 </style>
+<script>
+(function () {
+  var KEY = 'StackColorScheme';
+  var root = document.documentElement;
+  var stored = null;
+  try { stored = localStorage.getItem(KEY); } catch (e) {}
+  var mq = window.matchMedia('(prefers-color-scheme: dark)');
+
+  function resolve() {
+    if (stored === 'dark' || stored === 'light') return stored;
+    return mq.matches ? 'dark' : 'light';
+  }
+  function apply(scheme) {
+    root.dataset.scheme = scheme;
+    var btn = document.getElementById('themeToggle');
+    if (!btn) return;
+    var dark = scheme === 'dark';
+    btn.setAttribute('aria-pressed', dark ? 'true' : 'false');
+    btn.setAttribute('aria-label', dark ? '切换到浅色' : '切换到深色');
+  }
+  apply(resolve());
+
+  document.addEventListener('DOMContentLoaded', function () {
+    var btn = document.getElementById('themeToggle');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      var next = root.dataset.scheme === 'dark' ? 'light' : 'dark';
+      stored = next;
+      try { localStorage.setItem(KEY, next); } catch (e) {}
+      apply(next);
+    });
+  });
+
+  mq.addEventListener('change', function () {
+    if (stored !== 'dark' && stored !== 'light') apply(resolve());
+  });
+})();
+</script>
 </head>
 <body>
+<header class="site-head">
+  <div class="site-head-inner">
+    <a class="site-brand" href="{{ .Site.Home.RelPermalink }}">{{ .Site.Title }}</a>
+    <nav class="site-nav" aria-label="主导航">
+      <a href="{{ .Site.Home.RelPermalink }}">主页</a>
+      <a href="/about/">关于</a>
+      <a href="/archives/">归档</a>
+      <a href="/reading/" aria-current="page">阅读</a>
+      <a href="/search/">搜索</a>
+    </nav>
+    <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false" aria-label="切换到深色">
+      <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M3 12h1M20 12h1M12 3v1M12 20v1M5.6 5.6l.7.7M17.7 17.7l.7.7M18.4 5.6l-.7.7M6.3 17.7l-.7.7"/></svg>
+      <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 13.5A7.5 7.5 0 1 1 10.5 4a6 6 0 0 0 9.5 9.5z"/></svg>
+    </button>
+  </div>
+</header>
 <div class="wrap">
 <header class="hero">
   <h1>我的阅读记录</h1>
   <p class="sub">微信读书 · 书架 {{ len $books }} 本 + 历史 {{ len $history }} 本</p>
-  <p class="meta">
-    {{- with $stats.readDays }}<span>阅读 {{ . }} 天</span><span class="dot">·</span>{{ end -}}
-    {{- with $stats.totalReadTimeText }}<span>累计 {{ . }}</span><span class="dot">·</span>{{ end -}}
-    {{- if $data.generatedAt }}<span>同步于 {{ (time.AsTime $data.generatedAt).Format "2006-01-02 15:04" }}</span><span class="dot">·</span>{{ end -}}
-    <a href="{{ .Site.Home.RelPermalink }}">返回 {{ .Site.Title }}</a>
-  </p>
+  {{- $meta := slice -}}
+  {{- with $stats.readDays }}{{ $meta = $meta | append (printf "<span>阅读 %v 天</span>" .) }}{{ end -}}
+  {{- with $stats.totalReadTimeText }}{{ $meta = $meta | append (printf "<span>累计 %v</span>" .) }}{{ end -}}
+  {{- with $data.generatedAt }}{{ $meta = $meta | append (printf "<span>同步于 %s</span>" ((time.AsTime .).Format "2006-01-02 15:04")) }}{{ end -}}
+  {{- with $meta }}
+  <p class="meta">{{ delimit . "<span class=\"dot\">·</span>" | safeHTML }}</p>
+  {{- end }}
   <div class="rule" aria-hidden="true"></div>
 </header>
 

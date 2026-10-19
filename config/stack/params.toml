@@ -29,3 +29,7 @@ favicon        = "/favicon.ico"
 
 [cookies]
     enabled = false
+
+[dateFormat]
+    published   = "2006 年 1 月 2 日"
+    lastUpdated = "2006 年 1 月 2 日"
