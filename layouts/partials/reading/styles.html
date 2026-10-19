@@ -2,12 +2,12 @@
 :root{
   color-scheme:light;
   --font-sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
-  --font-serif:Georgia,"Songti SC","STSong","Noto Serif SC","SimSun",serif;
-  --bg:#f6f2ea; --surface:#fffdf9; --surface-2:#f9f4ea;
-  --ink:#29241d; --ink-2:#6a6154; --ink-3:#948a7b;
-  --line:#e7decd; --line-strong:#d8ccb7;
-  --accent:#8f5f33; --accent-ink:#7a4f28; --accent-soft:#f0e3d0;
-  --ring:rgba(143,95,51,.28);
+  --font-serif:"Noto Serif SC","Source Han Serif SC","Songti SC",Georgia,"SimSun",serif;
+  --bg:#f7f3ea; --surface:#fffdf8; --surface-2:#f3ecdf;
+  --ink:#241f18; --ink-2:#5f574b; --ink-3:#8a8073;
+  --line:#e7decd; --line-strong:#d6c9b4;
+  --accent:#8a5a2b; --accent-ink:#6f4520; --accent-soft:#f0e3d0;
+  --ring:rgba(138,90,43,.28);
   --shadow-sm:0 1px 2px rgba(52,40,24,.05),0 3px 10px rgba(52,40,24,.04);
   --shadow-md:0 2px 4px rgba(52,40,24,.06),0 12px 30px rgba(52,40,24,.08);
   --radius-sm:8px; --radius-md:12px; --radius-lg:16px;
@@ -21,10 +21,10 @@
   :root:not([data-scheme="light"]){
     color-scheme:dark;
     --bg:#16140f; --surface:#1f1c16; --surface-2:#26221a;
-    --ink:#ece4d4; --ink-2:#a99f8d; --ink-3:#7e7565;
-    --line:#332e25; --line-strong:#453e31;
-    --accent:#d6a970; --accent-ink:#e2bd8c; --accent-soft:#2c261d;
-    --ring:rgba(214,169,112,.26);
+    --ink:#f0e8d8; --ink-2:#c2b7a5; --ink-3:#8f8676;
+    --line:#332e25; --line-strong:#463f32;
+    --accent:#d9ae79; --accent-ink:#e7c596; --accent-soft:#2c261d;
+    --ring:rgba(217,174,121,.26);
     --shadow-sm:0 1px 2px rgba(0,0,0,.35),0 3px 10px rgba(0,0,0,.25);
     --shadow-md:0 2px 6px rgba(0,0,0,.4),0 14px 34px rgba(0,0,0,.35);
     --c-want:#9aa4b2; --c-want-bg:#262a30;
@@ -37,10 +37,10 @@
 :root[data-scheme="dark"]{
   color-scheme:dark;
   --bg:#16140f; --surface:#1f1c16; --surface-2:#26221a;
-  --ink:#ece4d4; --ink-2:#a99f8d; --ink-3:#7e7565;
-  --line:#332e25; --line-strong:#453e31;
-  --accent:#d6a970; --accent-ink:#e2bd8c; --accent-soft:#2c261d;
-  --ring:rgba(214,169,112,.26);
+  --ink:#f0e8d8; --ink-2:#c2b7a5; --ink-3:#8f8676;
+  --line:#332e25; --line-strong:#463f32;
+  --accent:#d9ae79; --accent-ink:#e7c596; --accent-soft:#2c261d;
+  --ring:rgba(217,174,121,.26);
   --shadow-sm:0 1px 2px rgba(0,0,0,.35),0 3px 10px rgba(0,0,0,.25);
   --shadow-md:0 2px 6px rgba(0,0,0,.4),0 14px 34px rgba(0,0,0,.35);
   --c-want:#9aa4b2; --c-want-bg:#262a30;
@@ -181,6 +181,19 @@ select.year:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--ring)}
 .empty-actions{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:18px}
 .foot{margin-top:42px;padding-top:20px;border-top:1px solid var(--line);text-align:center;font-size:12px;line-height:2;color:var(--ink-3)}
 .foot code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:11.5px;background:var(--surface-2);border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+/* ---- site footer（与主站一致的收尾） ---- */
+.site-foot{margin-top:56px;border-top:1px solid var(--line);background:var(--surface-2)}
+.site-foot-inner{max-width:1160px;margin:0 auto;padding:30px 20px 34px;display:grid;grid-template-columns:1fr auto;gap:22px 40px;align-items:start}
+.site-foot-brand b{display:block;font-family:var(--font-serif);font-size:18px;font-weight:600;letter-spacing:.04em;color:var(--ink)}
+.site-foot-brand p{margin:6px 0 0;font-size:12.5px;line-height:1.7;color:var(--ink-2);max-width:30em}
+.site-foot-links{display:flex;flex-wrap:wrap;gap:4px 16px;font-size:12.5px;justify-content:flex-end}
+.site-foot-links a{color:var(--ink-2)}
+.site-foot-links a:hover{color:var(--accent-ink);text-decoration:none}
+.site-foot-bottom{grid-column:1/-1;display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 16px;padding-top:14px;border-top:1px solid var(--line);font-size:11.5px;color:var(--ink-3)}
+@media (max-width:640px){
+  .site-foot-inner{grid-template-columns:1fr;padding:24px 14px 28px}
+  .site-foot-links{justify-content:flex-start}
+}
 .noscript{margin:0 0 16px;padding:10px 14px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--surface);font-size:13px;color:var(--ink-2)}
 @media (max-width:900px){
   .toolbar-inner{padding:9px 14px}
@@ -206,6 +219,11 @@ select.year:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--ring)}
   .tabs{width:100%;justify-content:flex-start;flex-wrap:wrap;border-radius:14px;gap:4px;overflow:visible}
   .tab{flex:1 1 calc(33.333% - 4px);min-width:0;justify-content:center;padding:7px 8px;font-size:12.5px}
   .tab .n{font-size:11px}
+  .filters{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;margin-left:0}
+  .search{grid-column:1/-1;width:100%}
+  .search input{width:100%;height:38px}
+  .filters select.year{width:100%;height:38px}
+  .filters .btn{height:38px;width:100%}
   .cards{grid-template-columns:1fr}
   .cover{width:64px;height:88px}
   .result-bar{flex-direction:column;align-items:flex-start;gap:6px}

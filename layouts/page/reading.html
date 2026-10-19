@@ -307,6 +307,26 @@
 {{- end }}
 </div>
 
+<footer class="site-foot">
+  <div class="site-foot-inner">
+    <div class="site-foot-brand">
+      <b>{{ .Site.Title }}</b>
+      <p>{{ .Site.Params.sidebar.subtitle }}</p>
+    </div>
+    <nav class="site-foot-links" aria-label="页脚导航">
+      <a href="{{ .Site.Home.RelPermalink }}">主页</a>
+      <a href="/archives/">归档</a>
+      <a href="/about/">关于</a>
+      <a href="/search/">搜索</a>
+      <a href="{{ "index.xml" | relURL }}">RSS</a>
+    </nav>
+    <div class="site-foot-bottom">
+      <span>&copy; {{ with .Site.Params.footer.since }}{{ . }}–{{ end }}{{ now.Format "2006" }} {{ .Site.Title }}</span>
+      <span>使用 Hugo 构建 · 主题 Stack</span>
+    </div>
+  </div>
+</footer>
+
 <script>
 (function () {
   'use strict';

@@ -6,7 +6,8 @@ favicon        = "/favicon.ico"
     since = 2026
 
 [sidebar]
-    avatar   = "/images/avatar.jpg"
+    avatar         = "/images/avatar-256.webp"
+    avatarFallback = "/images/avatar-256.jpg"
 
 [article]
     [article.license]
