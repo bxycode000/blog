@@ -7,24 +7,29 @@
 
     <header>
         {{ with .Site.Params.sidebar.avatar }}
-            {{- $avatar := partial "helper/image" (dict "Image" . "Resources" resources "Context" $) -}}
+            {{- $avatar := . -}}
+            {{- $fallback := $.Site.Params.sidebar.avatarFallback | default $avatar -}}
             <figure class="site-avatar">
                 <a href="{{ $.Site.Home.RelPermalink }}">
-                    <img src="{{ $avatar.Permalink }}" 
-                        width="{{ $avatar.Width }}"
-                        height="{{ $avatar.Height }}"
-                        class="site-logo"
-                        loading="lazy"
-                        alt="Avatar">
+                    <picture>
+                        <source srcset="{{ $avatar | relURL }}" type="image/webp">
+                        <img src="{{ $fallback | relURL }}"
+                            width="256"
+                            height="256"
+                            class="site-logo"
+                            loading="eager"
+                            decoding="async"
+                            alt="{{ $.Site.Title }}">
+                    </picture>
                 </a>
                 {{ with $.Site.Params.sidebar.emoji }}
                     <span class="emoji">{{ . }}</span>
                 {{ end }}
             </figure>
         {{ end }}
-        
+
         <div class="site-meta">
-            <h1 class="site-name"><a href="{{ .Site.Home.RelPermalink }}">{{ .Site.Title }}</a></h1>
+            <p class="site-name"><a href="{{ .Site.Home.RelPermalink }}">{{ .Site.Title }}</a></p>
             <h2 class="site-description">{{ .Site.Params.sidebar.subtitle }}</h2>
         </div>
     </header>
@@ -33,7 +38,7 @@
         <ol class="menu-social">
             {{ range . }}
                 <li>
-                    <a 
+                    <a
                         href='{{ .URL }}'
                         {{ if .Params.newTab }}target="_blank"{{ end }}
                         {{ with .Name }}title="{{ . }}"{{ end }}
@@ -66,7 +71,7 @@
             <ol class="menu">
                 {{- $currentLanguageCode := .Language.Name -}}
                 {{ if hugo.IsMultilingual }}
-                    <li id="i18n-switch">  
+                    <li id="i18n-switch">
                         {{ partial "helper/icon" "language" }}
                         <select name="language" title="language" onchange="window.location.href = this.selectedOptions[0].value">
                             {{ range .Site.Home.AllTranslations }}

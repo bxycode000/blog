@@ -1,0 +1,14 @@
+{{- /* Phase 2：多尺寸图标与默认 OG 封面（不覆盖文章自带封面） */ -}}
+<link rel="icon" href="{{ "/favicon.ico" | relURL }}" sizes="48x48">
+<link rel="icon" type="image/png" sizes="32x32" href="{{ "/favicon-32.png" | relURL }}">
+<link rel="apple-touch-icon" sizes="180x180" href="{{ "/apple-touch-icon.png" | relURL }}">
+<link rel="icon" type="image/png" sizes="192x192" href="{{ "/favicon-192.png" | relURL }}">
+
+{{- if not .Params.image }}
+<meta property="og:image" content="{{ "/images/og-cover.png" | absURL }}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="{{ .Site.Title }} · 跨境电商、自动化与阅读记录">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="{{ "/images/og-cover.png" | absURL }}">
+{{- end }}

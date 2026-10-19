@@ -1,33 +1,304 @@
 {{ define "body-class" }}template-search{{ end }}
 {{ define "head" }}
-    {{- with .OutputFormats.Get "json" -}} 
+    {{- with .OutputFormats.Get "json" -}}
         <link rel="preload" href="{{ .RelPermalink }}" as="fetch" crossorigin="anonymous">
     {{- end -}}
 {{ end }}
 {{ define "main" }}
-<form action="{{ .RelPermalink }}" class="search-form"{{ with .OutputFormats.Get "json" -}} data-json="{{ .RelPermalink }}"{{- end }}>
-    <p>
-        <label>{{ T "search.title" }}</label>
-        <input name="keyword" placeholder="{{ T `search.placeholder` }}" />
-    </p>
+<div class="search-page">
+    <header class="search-intro">
+        <p class="search-kicker">Search · 全站</p>
+        <h1 class="search-title">{{ .Title }}</h1>
+        <p class="search-desc">搜索文章、笔记与阅读记录。多个关键词用空格分隔，标题命中的排在前面。</p>
+    </header>
 
-    <button title="{{ T `search.title` }}">
-        {{ partial "helper/icon" "search" }}
-    </button>
-</form>
+    <form action="{{ .RelPermalink }}" method="get" class="search-form search-form--page" id="searchForm" role="search"
+        {{- with .OutputFormats.Get "json" }} data-json="{{ .RelPermalink }}"{{ end }}>
+        <div class="search-field">
+            <span class="search-field-icon" aria-hidden="true">{{ partial "helper/icon" "search" }}</span>
+            <label class="sr-only" for="searchInput">搜索关键词</label>
+            <input id="searchInput" name="keyword" type="search" autocomplete="off" spellcheck="false"
+                placeholder="搜索关键词，如 RPA、ROI">
+            <kbd class="search-kbd" aria-hidden="true">Enter</kbd>
+            <button type="submit" class="search-submit" aria-label="搜索">
+                {{ partial "helper/icon" "search" }}
+            </button>
+        </div>
+    </form>
+    <p class="search-tip">按 <kbd>Esc</kbd> 清空 · 搜索范围包含已发布的文章与独立页面</p>
 
-<div class="search-result hidden">
-    <h3 class="search-result--title section-title"></h3>
-    <div class="search-result--list article-list--compact"></div>
+    <section class="search-idle" id="searchIdle" aria-label="搜索建议">
+        {{- $tags := site.Taxonomies.tags.ByCount -}}
+        {{- with $tags }}
+        <div class="search-suggest">
+            <h2>热门标签</h2>
+            <div class="search-tags">
+                {{- range first 8 . }}
+                <a class="search-tag" href="{{ .Page.RelPermalink }}">{{ .Page.Title }}<span>{{ .Count }}</span></a>
+                {{- end }}
+            </div>
+        </div>
+        {{- end }}
+
+        <div class="search-suggest">
+            <h2>最近更新</h2>
+            <ul class="search-recent">
+                {{- range first 3 (where site.RegularPages "Section" "post") }}
+                <li>
+                    <a href="{{ .RelPermalink }}">
+                        <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2006 年 1 月 2 日" }}</time>
+                        <span>{{ .Title }}</span>
+                    </a>
+                </li>
+                {{- end }}
+            </ul>
+        </div>
+    </section>
+
+    <section class="search-panel" id="searchPanel" hidden>
+        <div class="search-panel-head">
+            <h2 class="search-result-title" id="searchResultTitle" aria-live="polite"></h2>
+            <button type="button" class="search-clear" id="searchClear">清除关键词</button>
+        </div>
+        <div class="search-results" id="searchResults"></div>
+        <div class="search-noresult" id="searchNoResult" hidden>
+            <b>没有找到「<span id="noresultKeyword"></span>」</b>
+            <p>试试更短的关键词，或者换一个说法。也可以直接浏览归档。</p>
+            <div class="search-noresult-actions">
+                <button type="button" class="search-action" id="noresultClear">清除关键词</button>
+                <a class="search-action" href="{{ "/archives/" | relURL }}">浏览归档</a>
+            </div>
+        </div>
+    </section>
 </div>
 
 <script>
-    window.searchResultTitleTemplate = "{{ T `search.resultTitle` }}"
-</script>
+(function () {
+    'use strict';
 
-{{- $opts := dict "minify" hugo.IsProduction "JSXFactory" "createElement" -}}
-{{- $searchScript := resources.Get "ts/search.tsx" | js.Build $opts -}}
-<script type="text/javascript" src="{{ $searchScript.RelPermalink }}" defer></script>
+    var form = document.getElementById('searchForm');
+    var input = document.getElementById('searchInput');
+    if (!form || !input) return;
+
+    var panel = document.getElementById('searchPanel');
+    var idle = document.getElementById('searchIdle');
+    var list = document.getElementById('searchResults');
+    var title = document.getElementById('searchResultTitle');
+    var empty = document.getElementById('searchNoResult');
+    var emptyKw = document.getElementById('noresultKeyword');
+    var emptyText = empty.querySelector('p');
+    var emptyTextDefault = emptyText.textContent;
+    var clearBtn = document.getElementById('searchClear');
+    var emptyClear = document.getElementById('noresultClear');
+    var jsonURL = form.getAttribute('data-json');
+
+    var cache = null;
+    var loading = null;
+    var timer = null;
+
+    function stripHTML(html) {
+        var box = document.createElement('div');
+        box.innerHTML = html || '';
+        return (box.textContent || '').replace(/\s+/g, ' ').trim();
+    }
+
+    function load() {
+        if (cache) return Promise.resolve(cache);
+        if (loading) return loading;
+        loading = fetch(jsonURL)
+            .then(function (res) {
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                return res.json();
+            })
+            .then(function (items) {
+                cache = items.map(function (item) {
+                    var text = stripHTML(item.content);
+                    return {
+                        title: item.title,
+                        titleLower: item.title.toLowerCase(),
+                        permalink: item.permalink,
+                        content: text,
+                        contentLower: text.toLowerCase()
+                    };
+                });
+                return cache;
+            });
+        return loading;
+    }
+
+    function mark(text, tokens) {
+        var lower = text.toLowerCase();
+        var ranges = [];
+        tokens.forEach(function (token) {
+            var from = 0;
+            while (from < lower.length) {
+                var at = lower.indexOf(token, from);
+                if (at === -1) break;
+                ranges.push([at, at + token.length]);
+                from = at + token.length;
+            }
+        });
+        if (!ranges.length) return document.createTextNode(text);
+
+        ranges.sort(function (a, b) { return a[0] - b[0]; });
+        var merged = [];
+        ranges.forEach(function (range) {
+            var last = merged[merged.length - 1];
+            if (last && range[0] <= last[1]) last[1] = Math.max(last[1], range[1]);
+            else merged.push(range.slice());
+        });
+
+        var frag = document.createDocumentFragment();
+        var cursor = 0;
+        merged.forEach(function (range) {
+            if (range[0] > cursor) frag.appendChild(document.createTextNode(text.slice(cursor, range[0])));
+            var el = document.createElement('mark');
+            el.textContent = text.slice(range[0], range[1]);
+            frag.appendChild(el);
+            cursor = range[1];
+        });
+        if (cursor < text.length) frag.appendChild(document.createTextNode(text.slice(cursor)));
+        return frag;
+    }
+
+    function preview(text, tokens) {
+        var lower = text.toLowerCase();
+        var hit = -1;
+        tokens.forEach(function (token) {
+            var at = lower.indexOf(token);
+            if (at !== -1 && (hit === -1 || at < hit)) hit = at;
+        });
+        if (hit === -1) return text.slice(0, 150) + (text.length > 150 ? '…' : '');
+        var start = Math.max(0, hit - 48);
+        var end = Math.min(text.length, start + 170);
+        return (start > 0 ? '…' : '') + text.slice(start, end) + (end < text.length ? '…' : '');
+    }
+
+    function reset() {
+        if (panel) panel.hidden = true;
+        if (idle) idle.hidden = false;
+        if (list) list.textContent = '';
+        if (title) title.textContent = '';
+        if (empty) empty.hidden = true;
+        if (emptyText) emptyText.textContent = emptyTextDefault;
+    }
+
+    function showIdle() {
+        reset();
+        try {
+            history.replaceState(null, '', window.location.pathname);
+        } catch (e) {}
+    }
+
+    function run(keyword) {
+        var tokens = keyword.toLowerCase().split(/\s+/).filter(Boolean);
+        if (!tokens.length) { showIdle(); return; }
+
+        var started = performance.now();
+
+        load().then(function (items) {
+            var hits = [];
+            items.forEach(function (item) {
+                var score = 0;
+                for (var i = 0; i < tokens.length; i++) {
+                    var inTitle = item.titleLower.indexOf(tokens[i]) !== -1;
+                    var inContent = item.contentLower.indexOf(tokens[i]) !== -1;
+                    if (!inTitle && !inContent) return;
+                    score += (inTitle ? 8 : 0) + (inContent ? 1 : 0);
+                }
+                hits.push({ item: item, score: score });
+            });
+            hits.sort(function (a, b) { return b.score - a.score; });
+
+            var seconds = ((performance.now() - started) / 1000).toFixed(2);
+            idle.hidden = true;
+            panel.hidden = false;
+            list.textContent = '';
+            title.textContent = hits.length + ' 篇结果 · ' + seconds + ' 秒';
+            empty.hidden = hits.length > 0;
+            emptyText.textContent = emptyTextDefault;
+
+            if (!hits.length) {
+                emptyKw.textContent = keyword;
+                return;
+            }
+
+            hits.forEach(function (hit) {
+                var article = document.createElement('article');
+                article.className = 'search-hit';
+
+                var link = document.createElement('a');
+                link.href = hit.item.permalink;
+                link.className = 'search-hit-link';
+
+                var h2 = document.createElement('h2');
+                h2.className = 'search-hit-title';
+                h2.appendChild(mark(hit.item.title, tokens));
+
+                var p = document.createElement('p');
+                p.className = 'search-hit-preview';
+                p.appendChild(mark(preview(hit.item.content, tokens), tokens));
+
+                link.appendChild(h2);
+                link.appendChild(p);
+                article.appendChild(link);
+                list.appendChild(article);
+            });
+        }).catch(function () {
+            idle.hidden = true;
+            panel.hidden = false;
+            list.textContent = '';
+            title.textContent = '索引未能加载';
+            empty.hidden = false;
+            emptyKw.textContent = keyword;
+            emptyText.textContent = '搜索索引加载失败，请刷新页面后重试。';
+        });
+
+        try {
+            var url = window.location.pathname + '?keyword=' + encodeURIComponent(keyword);
+            history.replaceState(null, '', url);
+        } catch (e) {}
+    }
+
+    function schedule() {
+        clearTimeout(timer);
+        var value = input.value.trim();
+        if (!value) { showIdle(); return; }
+        timer = setTimeout(function () { run(value); }, 140);
+    }
+
+    form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        clearTimeout(timer);
+        var value = input.value.trim();
+        if (value) run(value);
+        else showIdle();
+    });
+
+    input.addEventListener('input', schedule);
+    input.addEventListener('search', schedule);
+    input.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            input.value = '';
+            showIdle();
+        }
+    });
+
+    function clear() {
+        input.value = '';
+        showIdle();
+        input.focus();
+    }
+    if (clearBtn) clearBtn.addEventListener('click', clear);
+    if (emptyClear) emptyClear.addEventListener('click', clear);
+
+    var initial = new URL(window.location.toString()).searchParams.get('keyword') || '';
+    if (initial) {
+        input.value = initial;
+        run(initial);
+    }
+})();
+</script>
 
 {{ partialCached "footer/footer" . }}
 {{ end }}

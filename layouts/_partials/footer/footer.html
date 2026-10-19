@@ -1,0 +1,29 @@
+<footer class="site-footer">
+    <div class="footer-brand">
+        <b>{{ .Site.Title }}</b>
+        <p>{{ .Site.Params.sidebar.subtitle }}</p>
+    </div>
+
+    <div class="footer-links">
+        <nav class="footer-nav" aria-label="页脚导航">
+            <a href="{{ .Site.Home.RelPermalink }}">主页</a>
+            <a href="{{ "/archives/" | relURL }}">归档</a>
+            <a href="{{ "/reading/" | relURL }}">阅读</a>
+            <a href="{{ "/about/" | relURL }}">关于</a>
+            <a href="{{ "/search/" | relURL }}">搜索</a>
+        </nav>
+        <div class="footer-social">
+            <a href="https://github.com/bxycode000" target="_blank" rel="noopener">GitHub</a>
+            <a href="{{ "index.xml" | relURL }}">RSS</a>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <span>
+            &copy;
+            {{- with .Site.Params.footer.since }}{{ . }}–{{ end -}}
+            {{ now.Format "2006" }} {{ default .Site.Title .Site.Copyright }}
+        </span>
+        <span>使用 Hugo 构建 · 主题 Stack</span>
+    </div>
+</footer>
