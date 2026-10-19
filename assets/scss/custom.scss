@@ -1,15 +1,14 @@
 /* =========================================================
-   Phase 0 修复补充样式
-   仅处理：文章行长、归档分类胶囊、相关文章列表间距
-   不改主题配色与字体（留给 Phase 1）
+   Lyi · Phase 0 + Phase 1
+   Phase 0：文章行长、归档分类胶囊、相关文章间距
+   Phase 1：暖纸编辑风 tokens、首页 Hero、文章层级、侧栏与页脚
    ========================================================= */
 
-/* 1. 文章正文行长：桌面端主栏收至 780px，正文 720px（约 42 字/行）
-   保留卡片左边缘与侧栏菜单对齐，不使用居中，避免破坏三栏节奏 */
+/* ---------- Phase 0：文章行长 ---------- */
 @media (min-width: 1024px) {
     body.article-page main.main {
         max-width: 780px;
-        margin-left: auto;
+        margin-left: 0;
         margin-right: auto;
     }
 }
@@ -22,9 +21,24 @@ body.article-page .article-footer {
     margin-right: auto;
 }
 
-/* 2. 归档页分类：用胶囊行替代无封面的磁贴 */
+/* ---------- Phase 0：归档分类胶囊 ---------- */
 .archives-header {
     margin-bottom: var(--section-separation);
+}
+
+.archives-title {
+    font-family: var(--serif-font-family);
+    font-size: 3.4rem;
+    line-height: 1.3;
+    font-weight: 600;
+    margin: 0 0 24px;
+    color: var(--card-text-color-main);
+}
+
+@media (max-width: 767px) {
+    .archives-title {
+        font-size: 2.8rem;
+    }
 }
 
 .taxonomy-chips {
@@ -61,7 +75,591 @@ body.article-page .article-footer {
     font-variant-numeric: tabular-nums;
 }
 
-/* 3. 相关文章：紧凑列表与标题的间距 */
+/* ---------- Phase 0：相关文章间距 ---------- */
 .related-content .related-content-list {
     margin-top: var(--spacing-sm, 10px);
+}
+
+/* ---------- Phase 1：设计 tokens ---------- */
+:root {
+    --body-background: #f7f3ea;
+    --card-background: #fffdf8;
+    --card-background-selected: #f1e9da;
+
+    --body-text-color: #5f574b;
+    --accent-color: #8a5a2b;
+    --accent-color-darker: #6f4520;
+    --accent-color-text: #fffdf8;
+
+    --card-text-color-main: #241f18;
+    --card-text-color-secondary: #5f574b;
+    --card-text-color-tertiary: #8a8073;
+    --card-separator-color: rgba(231, 222, 205, .9);
+
+    --card-border-radius: 12px;
+    --tag-border-radius: 999px;
+
+    --blockquote-background-color: #f3ecdf;
+    --code-background-color: rgba(138, 90, 43, .08);
+    --code-text-color: #6f4520;
+
+    --serif-font-family: "Noto Serif SC", "Source Han Serif SC", "Songti SC", Georgia, "SimSun", serif;
+}
+
+:root[data-scheme="dark"] {
+    --body-background: #16140f;
+    --card-background: #1f1c16;
+    --card-background-selected: #2a251d;
+
+    --body-text-color: #c2b7a5;
+    --accent-color: #d9ae79;
+    --accent-color-darker: #e7c596;
+    --accent-color-text: #16140f;
+
+    --card-text-color-main: #f0e8d8;
+    --card-text-color-secondary: #c2b7a5;
+    --card-text-color-tertiary: #8f8676;
+    --card-separator-color: rgba(51, 46, 37, .9);
+
+    --blockquote-background-color: #221e17;
+    --code-background-color: rgba(217, 174, 121, .08);
+    --code-text-color: #d9ae79;
+}
+
+/* ---------- Phase 1：侧栏 ---------- */
+.sidebar .site-name,
+.sidebar .site-name a {
+    font-family: var(--serif-font-family);
+    font-size: 2.1rem;
+    letter-spacing: .04em;
+    color: var(--card-text-color-main);
+}
+
+.sidebar .site-name a:hover {
+    color: var(--accent-color);
+}
+
+.sidebar .site-description {
+    font-size: 1.25rem;
+    line-height: 1.7;
+    margin-top: 4px;
+    color: var(--body-text-color);
+}
+
+.sidebar .site-avatar .site-logo {
+    box-shadow: none;
+    border: 1px solid var(--card-separator-color);
+}
+
+.sidebar .menu a {
+    font-size: 1.35rem;
+}
+
+/* ---------- Phase 1：小组件 ---------- */
+.right-sidebar {
+    gap: 30px;
+}
+
+.sidebar .widget {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: 8px;
+    align-items: center;
+}
+
+.sidebar .widget > *:not(.widget-icon):not(.widget-title) {
+    grid-column: 1 / -1;
+}
+
+.sidebar .widget-icon svg {
+    width: 15px;
+    height: 15px;
+    stroke-width: 1.5;
+    color: var(--accent-color);
+    opacity: .85;
+}
+
+.sidebar .widget-title {
+    font-size: 1.15rem;
+    letter-spacing: .12em;
+    font-weight: 600;
+    margin: 0;
+    color: var(--card-text-color-tertiary);
+    text-transform: none;
+}
+
+.sidebar .widget-title a {
+    color: inherit;
+}
+
+.tagCloud .tagCloud-tags a {
+    background: transparent;
+    box-shadow: none;
+    border: 1px solid var(--card-separator-color);
+    border-radius: 999px;
+    padding: 5px 11px;
+    font-size: 1.2rem;
+    color: var(--body-text-color);
+    transition: border-color .15s ease, color .15s ease;
+}
+
+.tagCloud .tagCloud-tags a:hover {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+    box-shadow: none;
+}
+
+.widget.archives .widget-archive--list {
+    box-shadow: none;
+    border: 1px solid var(--card-separator-color);
+    border-radius: 10px;
+}
+
+/* 搜索框：label 仅屏幕阅读器可见，输入框恢复单行高度 */
+.search-form.widget label {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.search-form.widget input {
+    height: 42px;
+    padding: 10px 48px 10px 14px !important;
+    border: 1px solid var(--card-separator-color);
+    border-radius: 10px;
+    box-shadow: none;
+    font-size: 1.4rem;
+}
+
+.search-form.widget input:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(138, 90, 43, .16);
+}
+
+.search-form.widget button svg {
+    stroke-width: 1.6;
+    color: var(--card-text-color-tertiary);
+}
+
+/* ---------- Phase 1：首页 Hero 与文章流 ---------- */
+.home-hero {
+    padding: 4px 0 6px;
+}
+
+.home-hero__eyebrow {
+    margin: 0 0 14px;
+    font-size: 1.1rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--accent-color);
+}
+
+.home-hero__title {
+    font-family: var(--serif-font-family);
+    font-size: 4.4rem;
+    font-weight: 600;
+    line-height: 1.28;
+    letter-spacing: .01em;
+    margin: 0 0 16px;
+    color: var(--card-text-color-main);
+}
+
+@media (max-width: 1023px) {
+    .home-hero__title {
+        font-size: 3.8rem;
+    }
+}
+
+@media (max-width: 767px) {
+    .home-hero__title {
+        font-size: 3.4rem;
+    }
+}
+
+@media (max-width: 400px) {
+    .home-hero__title {
+        font-size: 3rem;
+    }
+}
+
+@media (max-width: 360px) {
+    .home-hero__title {
+        font-size: 2.6rem;
+    }
+
+    body.article-page .article-title {
+        font-size: 2.6rem;
+    }
+}
+
+.home-hero__title span {
+    color: var(--accent-color);
+}
+
+.home-hero__desc {
+    max-width: 36em;
+    margin: 0 0 20px;
+    font-size: 1.55rem;
+    line-height: 1.85;
+    color: var(--body-text-color);
+}
+
+.home-hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.hero-link {
+    display: inline-flex;
+    align-items: center;
+    height: 32px;
+    padding: 0 12px;
+    border: 1px solid var(--card-separator-color);
+    border-radius: 999px;
+    font-size: 1.25rem;
+    color: var(--body-text-color);
+    transition: border-color .15s ease, color .15s ease;
+}
+
+.hero-link:hover {
+    border-color: var(--accent-color);
+    color: var(--accent-color);
+    text-decoration: none;
+}
+
+.home-feed {
+    display: flex;
+    flex-direction: column;
+}
+
+.home-list-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--card-separator-color);
+}
+
+.home-list-head h2 {
+    font-family: var(--serif-font-family);
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin: 0;
+    color: var(--card-text-color-main);
+}
+
+.home-list-head a {
+    font-size: 1.2rem;
+    color: var(--card-text-color-tertiary);
+    white-space: nowrap;
+}
+
+.home-list-head a:hover {
+    color: var(--accent-color);
+}
+
+.home-page .article-list {
+    gap: 0;
+}
+
+.home-page .article-list > article {
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+    border-bottom: 1px solid var(--card-separator-color);
+    padding: 0;
+    gap: 0;
+    transition: none;
+    overflow: visible;
+}
+
+.home-page .article-list > article:hover {
+    box-shadow: none;
+}
+
+.home-page .article-list .article-details {
+    padding: 26px 0;
+    gap: 10px;
+}
+
+.home-page .article-list .article-title {
+    font-family: var(--serif-font-family);
+    font-size: 2.6rem;
+    line-height: 1.4;
+    letter-spacing: .01em;
+    text-wrap: balance;
+}
+
+.home-page .article-list .article-title a:hover {
+    color: var(--accent-color);
+    opacity: 1;
+}
+
+.home-page .article-list .article-subtitle {
+    font-size: 1.55rem;
+    line-height: 1.7;
+    max-width: 62ch;
+}
+
+.home-page .article-list .article-category {
+    margin-bottom: 2px;
+}
+
+.home-page .article-list .article-meta {
+    font-size: 1.25rem;
+    color: var(--card-text-color-tertiary);
+}
+
+.home-page .article-list .article-meta svg {
+    width: 16px;
+    height: 16px;
+}
+
+/* ---------- Phase 1：文章页 ---------- */
+body.article-page .article-title {
+    font-family: var(--serif-font-family);
+    font-size: clamp(3.2rem, 3.3vw, 3.9rem);
+    line-height: 1.3;
+    letter-spacing: .01em;
+    text-wrap: pretty;
+}
+
+body.article-page .article-subtitle {
+    font-size: 1.55rem;
+    line-height: 1.75;
+    color: var(--card-text-color-secondary);
+    margin-top: 2px;
+}
+
+body.article-page .article-content {
+    font-size: 1.7rem;
+    line-height: 1.9;
+}
+
+body.article-page .article-content h2 {
+    font-family: var(--serif-font-family);
+    font-size: 2.6rem;
+    line-height: 1.45;
+}
+
+body.article-page .article-content h3 {
+    font-size: 2rem;
+    line-height: 1.5;
+}
+
+body.article-page .article-content blockquote {
+    border-left-color: var(--accent-color);
+}
+
+body.article-page .article-meta {
+    font-size: 1.3rem;
+}
+
+@media (max-width: 767px) {
+    body.article-page .article-title {
+        font-size: 3rem;
+    }
+}
+
+.related-content .section-title {
+    font-family: var(--serif-font-family);
+    font-size: 2rem;
+    font-weight: 600;
+    text-transform: none;
+    margin-bottom: 12px;
+    color: var(--card-text-color-main);
+}
+
+/* 目录：去掉列表符号，改为紧凑的缩进导航 */
+.toc-nav ul {
+    list-style: none;
+}
+
+.toc-nav > ul {
+    padding: 0;
+}
+
+.toc-nav li {
+    margin: 1px 0;
+    padding: 0;
+}
+
+.toc-nav a {
+    display: block;
+    padding: 5px 8px;
+    border-radius: 6px;
+    font-size: 1.3rem;
+    line-height: 1.6;
+    color: var(--body-text-color);
+}
+
+.toc-nav a:hover {
+    color: var(--accent-color);
+    background: var(--card-background-selected);
+}
+
+.toc-nav li.active-class > a {
+    border-left: 0;
+    background: var(--card-background-selected);
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
+.toc-nav ul ul {
+    margin-left: 6px;
+    margin-top: 2px;
+    padding-left: 12px;
+    border-left: 1px solid var(--card-separator-color);
+}
+
+/* ---------- Phase 1：分类 / 标签统一为描边胶囊 ---------- */
+.article-category a,
+.article-tags a {
+    background: transparent !important;
+    color: var(--accent-color) !important;
+    border: 1px solid var(--card-separator-color);
+    border-radius: 999px !important;
+    padding: 3px 10px !important;
+    font-size: 1.15rem !important;
+    line-height: 1.6;
+    letter-spacing: .04em;
+    box-shadow: none !important;
+}
+
+.article-category a:hover,
+.article-tags a:hover {
+    background: var(--card-background-selected) !important;
+    border-color: var(--accent-color);
+}
+
+/* ---------- Phase 1：页脚 ---------- */
+footer.site-footer {
+    margin-top: 6px;
+    padding: 28px 0 40px;
+    border-top: 1px solid var(--card-separator-color);
+}
+
+footer.site-footer::before {
+    display: none;
+}
+
+.footer-brand b {
+    font-family: var(--serif-font-family);
+    font-size: 1.9rem;
+    font-weight: 600;
+    letter-spacing: .04em;
+    color: var(--card-text-color-main);
+}
+
+.footer-brand p {
+    margin: 6px 0 0;
+    max-width: 28em;
+    font-size: 1.25rem;
+    line-height: 1.7;
+    color: var(--body-text-color);
+}
+
+.footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 10px 20px;
+    margin-top: 20px;
+    font-size: 1.25rem;
+}
+
+.footer-nav,
+.footer-social {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 14px;
+}
+
+.footer-nav a,
+.footer-social a {
+    color: var(--body-text-color);
+}
+
+.footer-nav a:hover,
+.footer-social a:hover {
+    color: var(--accent-color);
+}
+
+.footer-bottom {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px 16px;
+    margin-top: 22px;
+    padding-top: 14px;
+    border-top: 1px solid var(--card-separator-color);
+    font-size: 1.1rem;
+    color: var(--card-text-color-tertiary);
+}
+
+/* 搜索页：底部对齐 + 单行搜索框 */
+.template-search main.main {
+    min-height: calc(100vh - 110px);
+    display: flex;
+    flex-direction: column;
+}
+
+.template-search .search-form label {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+.template-search .search-form input {
+    padding: 16px 80px 16px 18px;
+    border: 1px solid var(--card-separator-color);
+    border-radius: 12px;
+    box-shadow: none;
+    font-size: 1.7rem;
+}
+
+.template-search .search-form input:focus {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px rgba(138, 90, 43, .16);
+}
+
+.template-search footer.site-footer {
+    margin-top: auto;
+    padding-bottom: 24px;
+}
+
+.search-title {
+    font-family: var(--serif-font-family);
+    font-size: 3.4rem;
+    line-height: 1.3;
+    font-weight: 600;
+    margin: 0 0 8px;
+    color: var(--card-text-color-main);
+}
+
+.search-desc {
+    margin: 0 0 24px;
+    font-size: 1.4rem;
+    line-height: 1.75;
+    color: var(--body-text-color);
+}
+
+@media (max-width: 767px) {
+    .search-title {
+        font-size: 2.8rem;
+    }
 }
