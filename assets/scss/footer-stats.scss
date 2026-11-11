@@ -1,0 +1,46 @@
+/* =========================================================
+   页脚统计：稳定运行天数 + 文章/字数
+   ========================================================= */
+.footer-stats {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 6px 22px;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--card-separator-color);
+    font-size: 1.2rem;
+    line-height: 1.8;
+    color: var(--card-text-color-secondary);
+}
+
+.footer-stat {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 5px;
+    letter-spacing: .01em;
+}
+
+.footer-stat b {
+    font-family: var(--mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--accent-color);
+    font-variant-numeric: tabular-nums;
+}
+
+.footer-stat--running .running-days {
+    border-bottom: 1px dotted var(--accent-color);
+    padding: 0 1px;
+}
+
+.footer-stat--count b {
+    color: var(--card-text-color-main);
+}
+
+@media (max-width: 767px) {
+    .footer-stats {
+        gap: 4px 16px;
+        font-size: 1.1rem;
+    }
+}

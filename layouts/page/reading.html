@@ -142,8 +142,9 @@
     <nav class="site-nav" aria-label="主导航">
       <a href="{{ .Site.Home.RelPermalink }}">主页</a>
       <a href="/blog/about/">关于</a>
-      <a href="/blog/archives/">归档</a>
+      <a href="/blog/archives/">博文</a>
       <a href="/blog/reading/" aria-current="page">阅读</a>
+      <a href="/blog/friends/">友链</a>
       <a href="/blog/search/">搜索</a>
     </nav>
     <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false" aria-label="切换到深色">
@@ -315,13 +316,16 @@
     </div>
     <nav class="site-foot-links" aria-label="页脚导航">
       <a href="{{ .Site.Home.RelPermalink }}">主页</a>
-      <a href="/blog/archives/">归档</a>
+      <a href="/blog/archives/">博文</a>
+      <a href="/blog/reading/">阅读</a>
+      <a href="/blog/friends/">友链</a>
       <a href="/blog/about/">关于</a>
       <a href="/blog/search/">搜索</a>
       <a href="{{ "index.xml" | relURL }}">RSS</a>
     </nav>
+    {{ partial "footer/stats" . }}
     <div class="site-foot-bottom">
-      <span>&copy; {{ with .Site.Params.footer.since }}{{ . }}–{{ end }}{{ now.Format "2006" }} {{ .Site.Title }}</span>
+      <span>&copy; {{ $since := .Site.Params.footer.since }}{{ if and $since (ne (int $since) (int (now.Format "2006"))) }}{{ $since }}–{{ end }}{{ now.Format "2006" }} {{ .Site.Title }}</span>
       <span>使用 Hugo 构建 · 主题 Stack</span>
     </div>
   </div>

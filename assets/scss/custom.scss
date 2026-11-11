@@ -302,6 +302,29 @@ body.article-page .article-footer {
     color: var(--accent-color);
 }
 
+/* SplitText：标题逐字/逐词入场 */
+.home-hero__title[data-split-text] {
+    overflow: hidden;
+}
+
+[data-split-text] .split-piece {
+    display: inline-block;
+    transform-origin: 50% 100%;
+    will-change: transform, opacity, filter;
+}
+
+[data-split-text] .split-word {
+    white-space: nowrap;
+}
+
+[data-split-text] .split-mask {
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: top;
+    padding-bottom: .08em;
+    margin-bottom: -.08em;
+}
+
 .home-hero__desc {
     max-width: 36em;
     margin: 0 0 20px;
@@ -1201,3 +1224,7 @@ footer.site-footer::before {
 .template-404 footer.site-footer {
     margin-top: auto;
 }
+
+/* ---------- 页脚统计、友链页样式 ---------- */
+@import "footer-stats";
+@import "friends";

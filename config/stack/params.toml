@@ -4,6 +4,8 @@ favicon        = "favicon.ico"
 
 [footer]
     since = 2026
+    # 站点稳定运行的起点（页脚「已稳定运行 N 天」按此日期实时计算）
+    startDate = "2026-10-16"
 
 [sidebar]
     avatar         = "images/avatar-256.webp"

@@ -1,0 +1,43 @@
+{{- /*
+  页脚统计：
+  - 本博客已稳定运行 N 天（JS 按 footer.startDate 实时计算，无需每日重建）
+  - 发表了 N 篇文章 · 总计 M 字（Hugo 构建时统计 post 分区已发布文章）
+*/ -}}
+{{- $posts := where site.RegularPages "Section" "post" -}}
+{{- $postCount := len $posts -}}
+{{- $totalWords := 0 -}}
+{{- range $posts -}}
+    {{- $totalWords = add $totalWords .WordCount -}}
+{{- end -}}
+{{- $wordDisplay := printf "%d" $totalWords -}}
+{{- if ge $totalWords 10000 -}}
+    {{- $wan := div $totalWords 10000 -}}
+    {{- $rest := mod $totalWords 10000 -}}
+    {{- $qian := div $rest 1000 -}}
+    {{- if gt $qian 0 -}}
+        {{- $wordDisplay = printf "%d万%d千" $wan $qian -}}
+    {{- else -}}
+        {{- $wordDisplay = printf "%d万" $wan -}}
+    {{- end -}}
+{{- else if ge $totalWords 1000 -}}
+    {{- $wordDisplay = printf "%d千" (div $totalWords 1000) -}}
+{{- end -}}
+{{- $startDate := .Site.Params.footer.startDate | default "2026-10-16" -}}
+{{- $startTime := time.AsTime $startDate "Asia/Shanghai" -}}
+{{- $serverDays := int (div (sub now.Unix $startTime.Unix) 86400) -}}
+{{- if lt $serverDays 0 -}}{{- $serverDays = 0 -}}{{- end -}}
+<div class="footer-stats">
+    <span class="footer-stat footer-stat--running">本博客已稳定运行 <b class="running-days" id="runningdays" data-start="{{ $startDate }}">{{ $serverDays }}</b> 天</span>
+    <span class="footer-stat footer-stat--count">发表了 <b>{{ $postCount }}</b> 篇文章 · 总计 <b>{{ $wordDisplay }}</b> 字</span>
+</div>
+<script>
+(function () {
+    var el = document.getElementById('runningdays');
+    if (!el) return;
+    var start = new Date((el.getAttribute('data-start') || '').replace(/-/g, '/'));
+    if (isNaN(start.getTime())) return;
+    var days = Math.floor((Date.now() - start.getTime()) / 86400000);
+    if (days < 0) days = 0;
+    el.textContent = days.toLocaleString('zh-CN');
+})();
+</script>

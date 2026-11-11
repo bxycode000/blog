@@ -1,0 +1,626 @@
+/* =========================================================
+   友链页 /friends/
+   暖纸编辑风：米白纸底、深棕文字、衬线标题、细边框、圆角 12px
+   颜色全部取自 custom.scss 的 :root tokens，深浅色自动适配
+   ========================================================= */
+
+body.friends-page {
+    --friends-glow: rgba(138, 90, 43, .055);
+    background-image: radial-gradient(820px 400px at 68% -140px, var(--friends-glow), transparent 72%);
+    background-repeat: no-repeat;
+}
+
+:root[data-scheme="dark"] body.friends-page {
+    --friends-glow: rgba(217, 174, 121, .06);
+}
+
+.friends-wrap {
+    --friends-tint: rgba(138, 90, 43, .08);
+    --friends-tint-strong: rgba(138, 90, 43, .16);
+    --friends-shadow: rgba(36, 31, 24, .10);
+    --friends-shadow-soft: rgba(36, 31, 24, .05);
+
+    width: 100%;
+    max-width: 980px;
+    display: flex;
+    flex-direction: column;
+    gap: 34px;
+}
+
+:root[data-scheme="dark"] .friends-wrap {
+    --friends-tint: rgba(217, 174, 121, .09);
+    --friends-tint-strong: rgba(217, 174, 121, .20);
+    --friends-shadow: rgba(0, 0, 0, .48);
+    --friends-shadow-soft: rgba(0, 0, 0, .30);
+}
+
+/* ---------- 页头 ---------- */
+.friends-hero {
+    padding: 8px 0 0;
+}
+
+.friends-kicker {
+    margin: 0 0 12px;
+    font: 600 1.05rem/1.4 var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--accent-color);
+}
+
+.friends-title {
+    margin: 0 0 14px;
+    font-family: var(--serif-font-family);
+    font-size: 3.8rem;
+    font-weight: 600;
+    line-height: 1.28;
+    letter-spacing: .01em;
+    color: var(--card-text-color-main);
+}
+
+.friends-intro {
+    max-width: 40em;
+    margin: 0;
+    font-size: 1.5rem;
+    line-height: 1.9;
+    color: var(--body-text-color);
+}
+
+.friends-rule {
+    display: block;
+    width: 56px;
+    height: 2px;
+    margin-top: 24px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--accent-color), transparent);
+    opacity: .65;
+}
+
+/* ---------- 本站信息卡 ---------- */
+.friends-site {
+    position: relative;
+    display: grid;
+    grid-template-columns: 88px minmax(0, 1fr);
+    gap: 24px;
+    padding: 26px 28px 24px;
+    border: 1px solid var(--card-separator-color);
+    border-radius: var(--card-border-radius);
+    background: var(--card-background);
+    box-shadow: 0 1px 0 var(--friends-shadow-soft);
+    overflow: hidden;
+}
+
+.friends-site::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--accent-color), transparent 68%);
+    opacity: .5;
+    pointer-events: none;
+}
+
+.friends-site__avatar {
+    width: 88px;
+    height: 88px;
+    margin: 2px 0 0;
+    border: 1px solid var(--card-separator-color);
+    border-radius: 50%;
+    overflow: hidden;
+    background: var(--card-background-selected);
+    box-shadow: 0 0 0 4px var(--friends-tint);
+}
+
+.friends-site__avatar picture,
+.friends-site__avatar img {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.friends-site__avatar img {
+    object-fit: cover;
+}
+
+.friends-site__label {
+    margin: 0 0 6px;
+    font: 600 .95rem/1.5 var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--accent-color);
+    opacity: .9;
+}
+
+.friends-site__name {
+    margin: 0 0 6px;
+    font-family: var(--serif-font-family);
+    font-size: 2.4rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--card-text-color-main);
+}
+
+.friends-site__desc {
+    margin: 0;
+    font-size: 1.35rem;
+    line-height: 1.8;
+    color: var(--body-text-color);
+}
+
+.friends-site__facts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px 26px;
+    margin: 20px 0 0;
+    padding: 16px 0 0;
+    border-top: 1px dashed var(--card-separator-color);
+}
+
+.friends-fact {
+    display: grid;
+    grid-template-columns: 46px minmax(0, 1fr);
+    gap: 10px;
+    align-items: baseline;
+    min-width: 0;
+}
+
+.friends-fact--wide {
+    grid-column: 1 / -1;
+}
+
+.friends-fact dt {
+    font: 600 1rem/1.7 var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--card-text-color-tertiary);
+}
+
+.friends-fact dd {
+    margin: 0;
+    min-width: 0;
+    font-size: 1.2rem;
+    line-height: 1.7;
+    color: var(--card-text-color-secondary);
+    overflow-wrap: anywhere;
+}
+
+.friends-fact dd a {
+    color: var(--accent-color);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: color .15s ease, border-color .15s ease;
+}
+
+.friends-fact dd a:hover {
+    color: var(--accent-color-darker);
+    border-bottom-color: currentColor;
+}
+
+/* ---------- 友链列表 ---------- */
+.friends-section {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.friends-section__head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--card-separator-color);
+}
+
+.friends-section__title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    font-family: var(--serif-font-family);
+    font-size: 1.9rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--card-text-color-main);
+}
+
+.friends-section__dot {
+    width: 7px;
+    height: 7px;
+    flex: none;
+    border-radius: 50%;
+    background: var(--accent-color);
+    box-shadow: 0 0 0 3px var(--friends-tint);
+}
+
+.friends-section__count {
+    font: 500 1.02rem/1.4 var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--card-text-color-tertiary);
+    white-space: nowrap;
+}
+
+.friends-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.friend-card {
+    position: relative;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 14px;
+    align-items: start;
+    padding: 18px 18px 16px;
+    border: 1px solid var(--card-separator-color);
+    border-radius: var(--card-border-radius);
+    background: var(--card-background);
+    color: inherit;
+    text-decoration: none;
+    overflow: hidden;
+    transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+}
+
+.friend-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 16px;
+    right: 16px;
+    height: 2px;
+    border-radius: 999px;
+    background: var(--accent-color);
+    opacity: .6;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform .22s ease;
+}
+
+.friend-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(120% 100% at 100% 0%, var(--friends-tint-strong), transparent 58%);
+    opacity: 0;
+    transition: opacity .22s ease;
+    pointer-events: none;
+}
+
+.friend-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--accent-color);
+    box-shadow: 0 12px 30px var(--friends-shadow);
+    color: inherit;
+    text-decoration: none;
+}
+
+.friend-card:hover::before {
+    transform: scaleX(1);
+}
+
+.friend-card:hover::after {
+    opacity: 1;
+}
+
+.friend-card:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 3px;
+}
+
+.friend-card__avatar {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 48px;
+    height: 48px;
+    flex: none;
+    border: 1px solid var(--card-separator-color);
+    border-radius: 50%;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--friends-tint), var(--card-background-selected));
+    transition: border-color .18s ease, box-shadow .18s ease;
+}
+
+.friend-card__fallback {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--serif-font-family);
+    font-size: 1.65rem;
+    font-weight: 600;
+    color: var(--accent-color);
+    opacity: .85;
+    user-select: none;
+}
+
+.friend-card__avatar img {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .25s ease;
+}
+
+.friend-card:hover .friend-card__avatar {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px var(--friends-tint);
+}
+
+.friend-card:hover .friend-card__avatar img {
+    transform: scale(1.05);
+}
+
+.friend-card__body {
+    position: relative;
+    z-index: 1;
+    display: block;
+    min-width: 0;
+}
+
+.friend-card__head {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.friend-card__name {
+    font-family: var(--serif-font-family);
+    font-size: 1.55rem;
+    font-weight: 600;
+    line-height: 1.5;
+    letter-spacing: .01em;
+    color: var(--card-text-color-main);
+}
+
+.friend-card__arrow {
+    flex: none;
+    width: 16px;
+    height: 16px;
+    margin-top: 4px;
+    margin-left: auto;
+    color: var(--card-text-color-tertiary);
+    transition: transform .18s ease, color .18s ease;
+}
+
+.friend-card:hover .friend-card__arrow {
+    color: var(--accent-color);
+    transform: translate(2px, -2px);
+}
+
+.friend-card__desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin-top: 6px;
+    font-size: 1.25rem;
+    line-height: 1.75;
+    color: var(--card-text-color-secondary);
+}
+
+.friend-card__note {
+    display: block;
+    margin-top: 10px;
+    padding-top: 9px;
+    border-top: 1px dashed var(--card-separator-color);
+    font-size: 1.08rem;
+    line-height: 1.6;
+    letter-spacing: .02em;
+    color: var(--card-text-color-tertiary);
+}
+
+/* 「虚位以待」占位卡：好友位还空着时，邀请来客交换友链 */
+.friend-card--slot {
+    border-style: dashed;
+    background: transparent;
+    box-shadow: none;
+}
+
+.friend-card--slot:hover {
+    background: var(--card-background);
+}
+
+.friend-card__avatar--slot {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-style: dashed;
+    background: transparent;
+    box-shadow: none;
+    font-family: var(--serif-font-family);
+    font-size: 2rem;
+    font-weight: 400;
+    line-height: 1;
+    color: var(--card-text-color-tertiary);
+}
+
+.friend-card--slot:hover .friend-card__avatar--slot {
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+.friend-card--slot .friend-card__name {
+    color: var(--card-text-color-secondary);
+}
+
+.friend-card--slot .friend-card__desc {
+    color: var(--card-text-color-tertiary);
+}
+
+/* ---------- 空状态 ---------- */
+.friends-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 46px 24px;
+    border: 1px dashed var(--card-separator-color);
+    border-radius: var(--card-border-radius);
+    background: var(--card-background);
+    color: var(--card-text-color-secondary);
+}
+
+.friends-empty__icon {
+    display: flex;
+    margin-bottom: 12px;
+    color: var(--accent-color);
+    opacity: .8;
+}
+
+.friends-empty__icon svg {
+    width: 40px;
+    height: 40px;
+    stroke-width: 1.4;
+}
+
+.friends-empty b {
+    font-family: var(--serif-font-family);
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--card-text-color-main);
+}
+
+.friends-empty p {
+    max-width: 34em;
+    margin: 8px 0 0;
+    font-size: 1.25rem;
+    line-height: 1.8;
+}
+
+.friends-empty code {
+    padding: 1px 6px;
+    border-radius: 6px;
+    background: var(--code-background-color);
+    color: var(--code-text-color);
+    font-size: 1.15rem;
+}
+
+/* ---------- 交换提示 ---------- */
+.friends-outro {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin: 0;
+    padding: 14px 16px;
+    border: 1px dashed var(--card-separator-color);
+    border-radius: var(--card-border-radius);
+    font-size: 1.18rem;
+    line-height: 1.8;
+    color: var(--card-text-color-tertiary);
+}
+
+.friends-outro__icon {
+    display: flex;
+    flex: none;
+    margin-top: 2px;
+    color: var(--accent-color);
+    opacity: .75;
+}
+
+.friends-outro__icon svg {
+    width: 15px;
+    height: 15px;
+    stroke-width: 1.6;
+}
+
+.friends-outro a {
+    color: var(--accent-color);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color .15s ease;
+}
+
+.friends-outro a:hover {
+    border-bottom-color: currentColor;
+}
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 1199px) {
+    .friends-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 767px) {
+    .friends-wrap {
+        gap: 28px;
+    }
+
+    .friends-title {
+        font-size: 2.9rem;
+    }
+
+    .friends-intro {
+        font-size: 1.4rem;
+    }
+
+    .friends-site {
+        grid-template-columns: 1fr;
+        gap: 18px;
+        padding: 22px 20px 20px;
+    }
+
+    .friends-site__avatar {
+        width: 64px;
+        height: 64px;
+    }
+
+    .friends-site__name {
+        font-size: 2.15rem;
+    }
+
+    .friends-site__facts {
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .friends-fact--wide {
+        grid-column: auto;
+    }
+
+    .friends-section__title {
+        font-size: 1.75rem;
+    }
+
+    .friends-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .friend-card {
+        padding: 16px 16px 15px;
+    }
+}
+
+@media (max-width: 400px) {
+    .friends-title {
+        font-size: 2.5rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .friend-card,
+    .friend-card::before,
+    .friend-card::after,
+    .friend-card__arrow,
+    .friend-card__avatar,
+    .friend-card__avatar img {
+        transition: none;
+    }
+
+    .friend-card:hover {
+        transform: none;
+    }
+
+    .friend-card:hover .friend-card__avatar img {
+        transform: none;
+    }
+}

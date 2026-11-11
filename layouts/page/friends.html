@@ -1,0 +1,105 @@
+{{ define "body-class" }}friends-page{{ end }}
+
+{{ define "main" }}
+{{- $friends := site.Data.friends | default slice -}}
+{{- $avatar := .Site.Params.sidebar.avatar | default "images/avatar-256.webp" -}}
+{{- $avatarFallback := .Site.Params.sidebar.avatarFallback | default $avatar -}}
+<div class="friends-wrap">
+    <header class="friends-hero">
+        <p class="friends-kicker">FRIENDS · 友链</p>
+        <h1 class="friends-title">{{ .Title }}</h1>
+        <p class="friends-intro">{{ with .Description }}{{ . }}{{ else }}以文会友，以友辅仁。这里收集常读的博客和朋友们的站点。{{ end }}</p>
+        <span class="friends-rule" aria-hidden="true"></span>
+    </header>
+
+    <section class="friends-site" aria-labelledby="friends-site-name">
+        <figure class="friends-site__avatar">
+            <picture>
+                <source srcset="{{ $avatar | relURL }}" type="image/webp">
+                <img src="{{ $avatarFallback | relURL }}" width="88" height="88" alt="{{ .Site.Title }} 的头像" loading="lazy" decoding="async">
+            </picture>
+        </figure>
+        <div class="friends-site__body">
+            <p class="friends-site__label">本站信息 · SITE INFO</p>
+            <h2 class="friends-site__name" id="friends-site-name">{{ .Site.Title }}</h2>
+            <p class="friends-site__desc">{{ .Site.Params.sidebar.subtitle | default .Site.Params.description }}</p>
+            <dl class="friends-site__facts">
+                <div class="friends-fact friends-fact--wide">
+                    <dt>网址</dt>
+                    <dd><a href="{{ .Site.Home.Permalink }}">{{ .Site.Home.Permalink }}</a></dd>
+                </div>
+                <div class="friends-fact">
+                    <dt>头像</dt>
+                    <dd><a href="{{ $avatar | absURL }}">{{ $avatar | absURL }}</a></dd>
+                </div>
+                <div class="friends-fact">
+                    <dt>RSS</dt>
+                    <dd><a href="{{ "index.xml" | absURL }}">{{ "index.xml" | absURL }}</a></dd>
+                </div>
+            </dl>
+        </div>
+    </section>
+
+    <section class="friends-section" aria-labelledby="friends-list-title">
+        <div class="friends-section__head">
+            <h2 class="friends-section__title" id="friends-list-title"><span class="friends-section__dot" aria-hidden="true"></span>友情链接</h2>
+            <span class="friends-section__count">{{ len $friends }} 位朋友</span>
+        </div>
+
+        {{- if $friends }}
+        <div class="friends-grid">
+            {{- range $friends }}
+            {{- if and .name .url }}
+            {{- $friend := . }}
+            <a class="friend-card" href="{{ .url }}" target="_blank" rel="noopener nofollow">
+                <span class="friend-card__avatar">
+                    <span class="friend-card__fallback" aria-hidden="true">{{ substr .name 0 1 }}</span>
+                    {{- with .avatar }}
+                    <img src="{{ . }}" alt="{{ $friend.name }} 的头像" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.style.display='none'">
+                    {{- end }}
+                </span>
+                <span class="friend-card__body">
+                    <span class="friend-card__head">
+                        <span class="friend-card__name">{{ .name }}</span>
+                        <svg class="friend-card__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M9 7h8v8"/></svg>
+                    </span>
+                    {{- with .description }}
+                    <span class="friend-card__desc">{{ . }}</span>
+                    {{- end }}
+                    {{- with .note }}
+                    <span class="friend-card__note">{{ . }}</span>
+                    {{- end }}
+                </span>
+            </a>
+            {{- end }}
+            {{- end }}
+            {{- if lt (len $friends) 3 }}
+            <a class="friend-card friend-card--slot" href="https://github.com/bxycode000" target="_blank" rel="noopener">
+                <span class="friend-card__avatar friend-card__avatar--slot" aria-hidden="true">+</span>
+                <span class="friend-card__body">
+                    <span class="friend-card__head">
+                        <span class="friend-card__name">虚位以待</span>
+                        <svg class="friend-card__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M9 7h8v8"/></svg>
+                    </span>
+                    <span class="friend-card__desc">这里还留着一个位置。想交换友链的话，欢迎联系我。</span>
+                </span>
+            </a>
+            {{- end }}
+        </div>
+        {{- else }}
+        <div class="friends-empty">
+            <span class="friends-empty__icon" aria-hidden="true">{{ partial "helper/icon" "heart-handshake" }}</span>
+            <b>还没有友链</b>
+            <p>在 <code>data/friends.yml</code> 里添加第一条吧：写上名字、网址、头像和一句话简介，它就会出现在这里。</p>
+        </div>
+        {{- end }}
+    </section>
+
+    <p class="friends-outro">
+        <span class="friends-outro__icon" aria-hidden="true">{{ partial "helper/icon" "heart-handshake" }}</span>
+        <span>想交换友链？欢迎通过 <a href="{{ "about/" | relURL }}">关于页</a> 或 GitHub 联系我，附上站点名称、地址、头像与简介即可。</span>
+    </p>
+</div>
+
+{{ partialCached "footer/footer" . }}
+{{ end }}

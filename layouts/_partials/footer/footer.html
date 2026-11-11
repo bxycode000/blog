@@ -4,11 +4,14 @@
         <p>{{ .Site.Params.sidebar.subtitle }}</p>
     </div>
 
+    {{ partial "footer/stats" . }}
+
     <div class="footer-links">
         <nav class="footer-nav" aria-label="页脚导航">
             <a href="{{ .Site.Home.RelPermalink }}">主页</a>
-            <a href="{{ "archives/" | relURL }}">归档</a>
+            <a href="{{ "archives/" | relURL }}">博文</a>
             <a href="{{ "reading/" | relURL }}">阅读</a>
+            <a href="{{ "friends/" | relURL }}">友链</a>
             <a href="{{ "about/" | relURL }}">关于</a>
             <a href="{{ "search/" | relURL }}">搜索</a>
         </nav>
@@ -21,7 +24,8 @@
     <div class="footer-bottom">
         <span>
             &copy;
-            {{- with .Site.Params.footer.since }}{{ . }}–{{ end -}}
+            {{- $since := .Site.Params.footer.since -}}
+            {{- if and $since (ne (int $since) (int (now.Format "2006"))) }}{{ $since }}–{{ end -}}
             {{ now.Format "2006" }} {{ default .Site.Title .Site.Copyright }}
         </span>
         <span>使用 Hugo 构建 · 主题 Stack</span>
