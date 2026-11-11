@@ -69,7 +69,13 @@ jobs:
           extended: true
 
       - name: Build
-        run: hugo -e stack
+        run: hugo -e stack --destination public/blog
+
+      - name: Assemble site root
+        run: |
+          cp -r landing/. public/
+          mkdir -p public/about
+          cp landing/index.html public/about/index.html
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v4

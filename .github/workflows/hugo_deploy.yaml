@@ -20,7 +20,13 @@ jobs:
           hugo-version: "latest"
           extended: true
       - name: Build Web
-        run: hugo -e stack
+        run: hugo -e stack --destination public/blog
+
+      - name: Assemble site root
+        run: |
+          cp -r landing/. public/
+          mkdir -p public/about
+          cp landing/index.html public/about/index.html
       - name: Deploy Web
         uses: peaceiris/actions-gh-pages@v4
         with:
