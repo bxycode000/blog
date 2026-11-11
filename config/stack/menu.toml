@@ -10,7 +10,7 @@
 [[social]]
     identifier = "cv"
     name       = "CV"
-    url        = "/blog/portfolio/"
+    url        = "/portfolio/"
     weight     = 2
 
     [social.params]
