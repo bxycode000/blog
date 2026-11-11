@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>404 · 页面跳转中</title>
+<style>body{font-family:"Cascadia Mono",Consolas,"Microsoft YaHei",monospace;background:#17191c;color:#dbe4ff;padding:3rem;line-height:1.7}a{color:#83a6ff}</style>
+</head><body>
+<p>404 · 这个地址没有内容，正在尝试跳转到新位置…</p>
+<p>如果未自动跳转：<a href="/">关于</a> · <a href="/blog/">博客首页</a> · <a href="/blog/archives/">归档</a></p>
+<script>
+(function(){
+  var p = location.pathname;
+  var prefixes = ['/p/','/post/','/tags/','/categories/','/archives/','/search/','/reading/','/page/'];
+  for (var i=0;i<prefixes.length;i++){
+    if (p.indexOf(prefixes[i]) === 0) { location.replace('/blog' + p + location.search + location.hash); return; }
+  }
+  if (p === '/about') { location.replace('/about/' + location.search + location.hash); return; }
+})();
+</script>
+</body></html>
