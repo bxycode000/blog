@@ -1,13 +1,13 @@
 mainSections   = ["post"]
 rssFullContent = true
-favicon        = "/favicon.ico"
+favicon        = "favicon.ico"
 
 [footer]
     since = 2026
 
 [sidebar]
-    avatar         = "/images/avatar-256.webp"
-    avatarFallback = "/images/avatar-256.jpg"
+    avatar         = "images/avatar-256.webp"
+    avatarFallback = "images/avatar-256.jpg"
 
 [article]
     [article.license]
