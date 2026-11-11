@@ -5,3 +5,4 @@
 
     [zh-cn.params.sidebar]
         subtitle = "这里，是英雄启程的地方..."
+        subtitleHtml = '<a href="https://bxycode000.github.io/">这里</a>，是英雄启程的地方...'
