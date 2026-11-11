@@ -13,3 +13,7 @@ hugo.exe
 # 微信读书同步缓存（增量拉取用，不进仓库）
 .cache/weread/
 __pycache__/
+
+# 本地生成的简历草稿（含联系方式，勿提交）
+scripts/_resume_build.docx
+scripts/_resume_build.pdf
