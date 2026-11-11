@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#16140f" media="(prefers-color-scheme: dark)">
 <title>{{ .Title }} · {{ .Site.Title }}</title>
 <meta name="description" content="{{ .Description | default .Title }}">
-<link rel="icon" href="/favicon.ico">
+<link rel="icon" href="/blog/favicon.ico">
 {{- $data := dict -}}
 {{- with .Resources.Get "books.json" -}}
   {{- with try (transform.Unmarshal .) -}}
@@ -141,10 +141,10 @@
     <a class="site-brand" href="{{ .Site.Home.RelPermalink }}">{{ .Site.Title }}</a>
     <nav class="site-nav" aria-label="主导航">
       <a href="{{ .Site.Home.RelPermalink }}">主页</a>
-      <a href="/about/">关于</a>
-      <a href="/archives/">归档</a>
-      <a href="/reading/" aria-current="page">阅读</a>
-      <a href="/search/">搜索</a>
+      <a href="/blog/about/">关于</a>
+      <a href="/blog/archives/">归档</a>
+      <a href="/blog/reading/" aria-current="page">阅读</a>
+      <a href="/blog/search/">搜索</a>
     </nav>
     <button class="theme-toggle" id="themeToggle" type="button" aria-pressed="false" aria-label="切换到深色">
       <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M3 12h1M20 12h1M12 3v1M12 20v1M5.6 5.6l.7.7M17.7 17.7l.7.7M18.4 5.6l-.7.7M6.3 17.7l-.7.7"/></svg>
@@ -315,9 +315,9 @@
     </div>
     <nav class="site-foot-links" aria-label="页脚导航">
       <a href="{{ .Site.Home.RelPermalink }}">主页</a>
-      <a href="/archives/">归档</a>
-      <a href="/about/">关于</a>
-      <a href="/search/">搜索</a>
+      <a href="/blog/archives/">归档</a>
+      <a href="/blog/about/">关于</a>
+      <a href="/blog/search/">搜索</a>
       <a href="{{ "index.xml" | relURL }}">RSS</a>
     </nav>
     <div class="site-foot-bottom">

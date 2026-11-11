@@ -1,0 +1,30 @@
+{{ define "body-class" }}template-404{{ end }}
+{{ define "main" }}
+    <div class="not-found">
+        <p class="not-found-kicker">404 · Not Found</p>
+        <h1 class="not-found-title">这个地址没有内容。</h1>
+        <p class="not-found-lead">可能是链接过期、地址拼写有误，或者这篇文章还没写完。下面几条路都能回到有内容的地方。</p>
+
+        <div class="not-found-actions">
+            <a class="nf-btn nf-btn--primary" href="{{ .Site.Home.RelPermalink }}">回到首页</a>
+            <a class="nf-btn" href="{{ "archives/" | relURL }}">浏览归档</a>
+            <a class="nf-btn" href="{{ "search/" | relURL }}">搜索全站</a>
+        </div>
+
+        <div class="not-found-recent">
+            <h2>最近更新</h2>
+            <ul>
+                {{- range first 3 (where site.RegularPages "Section" "post") }}
+                <li>
+                    <a href="{{ .RelPermalink }}">
+                        <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2006 年 1 月 2 日" }}</time>
+                        <span>{{ .Title }}</span>
+                    </a>
+                </li>
+                {{- end }}
+            </ul>
+        </div>
+    </div>
+
+    {{ partialCached "footer/footer" . }}
+{{ end }}
