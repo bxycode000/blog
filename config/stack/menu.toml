@@ -2,6 +2,16 @@
     identifier = "github"
     name       = "GitHub"
     url        = "https://github.com/bxycode000"
+    weight     = 1
 
     [social.params]
         icon = "brand-github"
+
+[[social]]
+    identifier = "cv"
+    name       = "CV"
+    url        = "/portfolio/"
+    weight     = 2
+
+    [social.params]
+        icon = "cv"

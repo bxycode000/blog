@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-lang="zh" data-title-zh="关于 · Lyi" data-title-en="About · Lyi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#17191c">
+<title>{{ .Title }} · {{ .Site.Title }}</title>
+<meta name="description" content="{{ .Description | default .Title }}">
+<link rel="icon" href="/favicon.ico">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500&family=Roboto+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+{{ partial "about/styles.html" . | safeCSS }}
+</style>
+</head>
+<body class="loading">
+<div class="circle-container" aria-hidden="true">
+  <div class="circle" id="circle1"></div>
+  <div class="circle" id="circle2"></div>
+  <div class="circle" id="circle3"></div>
+</div>
+<div class="terminal-background" aria-hidden="true"></div>
+<div class="code-grid" aria-hidden="true"></div>
+
+<main class="container">
+  <div class="terminal">
+    <div class="terminal-content" id="terminal-content">
+      <div class="topbar">
+        <a class="back-link" href="/">← cd /blog</a>
+        <div class="topbar-right">
+          <a href="/portfolio/" data-zh="CV" data-en="CV">CV</a>
+          <a href="/archives/" data-zh="归档" data-en="Archive">归档</a>
+          <button class="lang-btn" id="lang-toggle" type="button" aria-label="Switch language">EN</button>
+        </div>
+      </div>
+
+      <p class="old-prompt"><span class="username">/lyi</span><span class="separator">$</span> whoami</p>
+      <p class="typedLine" data-typed data-zh="👋 你好，我是 Lyi —— 跨境电商运营，也是个爱折腾自动化的人。" data-en="👋 Hi, I'm Lyi — cross-border e-commerce operator and automation tinkerer.">👋 你好，我是 Lyi —— 跨境电商运营，也是个爱折腾自动化的人。</p>
+      <p class="typedLine" data-typed data-zh="关键词： Amazon · Listing · RPA · Excel · Python · 阅读 · Hugo" data-en="Keywords: Amazon · Listing · RPA · Excel · Python · Reading · Hugo">关键词： Amazon · Listing · RPA · Excel · Python · 阅读 · Hugo</p>
+      <p class="typedLine hint" data-zh-html="输入 <b>/help</b> 查看可用命令。" data-en-html="Type <b>/help</b> to see available commands.">输入 <b>/help</b> 查看可用命令。</p>
+
+      <section class="about-block" id="about-me">
+        <div class="about-header">
+          <h2 data-zh="关于我" data-en="About Me">关于我</h2>
+        </div>
+        <p data-zh="我在跨境电商一线做运营：关键词、Listing、广告、库存和复盘。写在这里的东西大多来自具体问题，而不是阅读清单。" data-en="I work on the front line of cross-border e-commerce: keywords, listings, ads, inventory and reviews. Most of what I write here comes from concrete problems, not reading lists.">我在跨境电商一线做运营：关键词、Listing、广告、库存和复盘。写在这里的东西大多来自具体问题，而不是阅读清单。</p>
+        <p data-zh="也是个长期的自动化爱好者——用脚本和 RPA 接管重复的点击、录入与对账，把时间留给判断。" data-en="I am also a long-time automation tinkerer: scripts and RPA take over repetitive clicks, data entry and reconciliation, leaving the time for judgement.">也是个长期的自动化爱好者——用脚本和 RPA 接管重复的点击、录入与对账，把时间留给判断。</p>
+        <p data-zh="微信读书的长期用户。书架上的书总比读完的多，所以单独做了一个页面来管理它们。" data-en="A long-time WeChat Reading user. My shelf always holds more books than I have finished, so I built a separate page to keep track of them.">微信读书的长期用户。书架上的书总比读完的多，所以单独做了一个页面来管理它们。</p>
+      </section>
+
+      <section class="term-section" id="now">
+        <h2><span class="mark">##</span><span data-zh="现在在做什么" data-en="What I'm doing now">现在在做什么</span></h2>
+        <ul>
+          <li><b data-zh="跨境电商" data-en="Cross-border e-commerce">跨境电商</b><span data-zh=" —— 关键词、Listing、广告与复盘。把每个环节拆开看，找出可以复用的部分。" data-en=" — keywords, listings, ads and reviews. I take each step apart to find what can be reused."> —— 关键词、Listing、广告与复盘。把每个环节拆开看，找出可以复用的部分。</span></li>
+          <li><b data-zh="自动化" data-en="Automation">自动化</b><span data-zh=" —— 用脚本和 RPA 接管重复的点击、录入与对账，把时间留给判断。" data-en=" — scripts and RPA for repetitive clicking, entry and reconciliation, so time goes to judgement instead."> —— 用脚本和 RPA 接管重复的点击、录入与对账，把时间留给判断。</span></li>
+          <li><b data-zh="阅读" data-en="Reading">阅读</b><span data-zh=" —— 微信读书长期用户；书架总比读完的长，于是把「阅读」做成了独立页面。" data-en=" — a long-time WeChat Reading user; the shelf is always longer than the finished list, so Reading became its own page."> —— 微信读书长期用户；书架总比读完的长，于是把「阅读」做成了独立页面。</span></li>
+        </ul>
+      </section>
+
+      <section class="term-section" id="writing">
+        <h2><span class="mark">##</span><span data-zh="这个站点写什么" data-en="What this site is about">这个站点写什么</span></h2>
+        <ol>
+          <li><b data-zh="运营笔记" data-en="Operations notes">运营笔记</b><span data-zh="：跨境电商的具体问题、操作步骤与复盘，不写空泛的方法论。" data-en=": concrete cross-border problems, steps and reviews — no empty methodology.">：跨境电商的具体问题、操作步骤与复盘，不写空泛的方法论。</span></li>
+          <li><b data-zh="自动化实践" data-en="Automation practice">自动化实践</b><span data-zh="：RPA、Excel、脚本。解决一个具体问题，就记一篇。" data-en=": RPA, Excel and scripts. One concrete problem solved, one note written.">：RPA、Excel、脚本。解决一个具体问题，就记一篇。</span></li>
+          <li><b data-zh="阅读记录" data-en="Reading records">阅读记录</b><span data-zh="：读过的书、划过的线，以及它们和工作之间的关系。" data-en=": books read, lines underlined, and how they connect back to the work.">：读过的书、划过的线，以及它们和工作之间的关系。</span></li>
+        </ol>
+        <p class="small-note" data-zh="不写日更，不写「三天起号」，也不做课程。这里更像一个持续更新的工作台，而不是一个媒体。" data-en="No daily posting, no get-rich-quick playbooks, no courses. This is a workbench that keeps getting updated, not a media outlet.">不写日更，不写「三天起号」，也不做课程。这里更像一个持续更新的工作台，而不是一个媒体。</p>
+      </section>
+
+      <section class="term-section" id="stack">
+        <h2><span class="mark">##</span><span data-zh="这个站点怎么搭的" data-en="How this site is built">这个站点怎么搭的</span></h2>
+        <p data-zh="Hugo + Stack 主题，托管在 GitHub Pages。内容只有一份，通过 Hugo 的环境配置保留了两套主题；样式、模板与阅读页都是在这个基础上改的，没有换主题。" data-en="Hugo with the Stack theme, hosted on GitHub Pages. There is only one copy of the content; two themes are kept through Hugo environment configs. The styles, templates and Reading page are all built on top of that, without switching themes.">Hugo + Stack 主题，托管在 GitHub Pages。内容只有一份，通过 Hugo 的环境配置保留了两套主题；样式、模板与阅读页都是在这个基础上改的，没有换主题。</p>
+        <p data-zh="阅读页的数据来自微信读书：书架与历史记录由脚本同步成 JSON，构建时由 Hugo 读入，再按在读、已读、想读、准备读和历史阅读分类。没有数据库，也不依赖第三方接口。" data-en="The Reading page gets its data from WeChat Reading: shelves and history are synced to JSON by a script, read by Hugo at build time, then grouped into reading, finished, want, planned and history. No database, no third-party API.">阅读页的数据来自微信读书：书架与历史记录由脚本同步成 JSON，构建时由 Hugo 读入，再按在读、已读、想读、准备读和历史阅读分类。没有数据库，也不依赖第三方接口。</p>
+      </section>
+
+      <section class="term-section" id="contact">
+        <h2><span class="mark">##</span><span data-zh="联系" data-en="Contact">联系</span></h2>
+        <ul>
+          <li><b>GitHub</b><span data-zh="：" data-en=": ">：</span><a href="https://github.com/bxycode000" target="_blank" rel="me noopener">bxycode000</a><span data-zh=" —— 有问题或想聊，开一个 issue 最快。" data-en=" — an issue is the fastest way to reach me."> —— 有问题或想聊，开一个 issue 最快。</span></li>
+          <li><b>RSS</b><span data-zh="：" data-en=": ">：</span><a href="/index.xml">/index.xml</a><span data-zh=" —— 新文章会直接推到阅读器里。" data-en=" — new posts land straight in your reader."> —— 新文章会直接推到阅读器里。</span></li>
+          <li><b>CV</b><span data-zh="：" data-en=": ">：</span><a href="/portfolio/" data-zh="在线简历" data-en="online CV">在线简历</a><span data-zh=" —— 工作经历、技能与精选文章。" data-en=" — experience, skills and selected writing."> —— 工作经历、技能与精选文章。</span></li>
+        </ul>
+        <p class="small-note" data-zh="站内没有留言板，也没有邮件列表。阅读是单向的，反馈走 GitHub 就够了。" data-en="No comment board and no mailing list here. Reading is one-way; GitHub is enough for feedback.">站内没有留言板，也没有邮件列表。阅读是单向的，反馈走 GitHub 就够了。</p>
+      </section>
+
+      <p class="small-note" style="margin-top:2.4rem;">[EOF]</p>
+      <div id="command-output" aria-live="polite"></div>
+    </div>
+
+    <label class="prompt-line" id="prompt" for="command-input">
+      <span class="username">/lyi</span><span class="separator">$</span>
+      <span class="input-wrap">
+        <input class="inputField" id="command-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Terminal command">
+        <span class="cursor" aria-hidden="true">▋</span>
+      </span>
+    </label>
+  </div>
+</main>
+
+<script>
+(function () {
+  'use strict';
+
+  var root = document.documentElement;
+  var LANG_KEY = 'lyi-about-lang';
+  var langBtn = document.getElementById('lang-toggle');
+
+  function readLang() {
+    try {
+      var v = window.localStorage.getItem(LANG_KEY);
+      if (v === 'zh' || v === 'en') return v;
+    } catch (e) {}
+    var q = new URLSearchParams(window.location.search).get('lang');
+    if (q === 'zh' || q === 'en') return q;
+    return 'zh';
+  }
+
+  function applyLanguage(lang) {
+    var isZh = lang === 'zh';
+    root.setAttribute('lang', isZh ? 'zh-CN' : 'en');
+    root.setAttribute('data-lang', lang);
+
+    document.querySelectorAll('[data-zh]').forEach(function (el) {
+      var v = el.getAttribute(isZh ? 'data-zh' : 'data-en');
+      if (v !== null) el.textContent = v;
+    });
+    document.querySelectorAll('[data-zh-html]').forEach(function (el) {
+      var v = el.getAttribute(isZh ? 'data-zh-html' : 'data-en-html');
+      if (v !== null) el.innerHTML = v;
+    });
+
+    var title = root.getAttribute(isZh ? 'data-title-zh' : 'data-title-en');
+    if (title) document.title = title;
+    if (langBtn) {
+      langBtn.textContent = isZh ? 'EN' : '中文';
+      langBtn.setAttribute('aria-label', isZh ? 'Switch to English' : '切换到中文');
+    }
+    try { window.localStorage.setItem(LANG_KEY, lang); } catch (e) {}
+  }
+
+  var currentLang = readLang();
+  applyLanguage(currentLang);
+
+  if (langBtn) {
+    langBtn.addEventListener('click', function () {
+      currentLang = root.getAttribute('data-lang') === 'zh' ? 'en' : 'zh';
+      applyLanguage(currentLang);
+    });
+  }
+
+  /* ---- typewriter for the intro lines ---- */
+  var typedEls = Array.prototype.slice.call(document.querySelectorAll('[data-typed]'));
+  var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function typeIntro() {
+    if (reduceMotion || !typedEls.length) return;
+    typedEls.forEach(function (el) {
+      el.dataset.full = el.textContent;
+      el.textContent = '';
+    });
+    var i = 0;
+    function nextLine() {
+      if (i >= typedEls.length) return;
+      var el = typedEls[i];
+      var text = el.dataset.full;
+      var n = 0;
+      el.classList.add('is-typing');
+      var timer = setInterval(function () {
+        n += 1;
+        el.textContent = text.slice(0, n);
+        if (n >= text.length) {
+          clearInterval(timer);
+          el.classList.remove('is-typing');
+          i += 1;
+          setTimeout(nextLine, 120);
+        }
+      }, 18);
+    }
+    setTimeout(nextLine, 260);
+  }
+  window.addEventListener('load', function () {
+    document.body.classList.remove('loading');
+    typeIntro();
+  });
+
+  /* ---- command line ---- */
+  var input = document.getElementById('command-input');
+  var output = document.getElementById('command-output');
+  var prompt = document.getElementById('prompt');
+
+  var HELP_ZH = [
+    '/help      显示这份帮助',
+    '/about     跳到「关于我」',
+    '/now       现在在做什么',
+    '/writing   这个站点写什么',
+    '/stack     这个站点怎么搭的',
+    '/contact   联系方式',
+    '/cv        打开在线 CV',
+    '/blog      回到博客首页',
+    '/zh /en    切换中英文',
+    '/clear     清空输出'
+  ];
+  var HELP_EN = [
+    '/help      show this help',
+    '/about     jump to About Me',
+    '/now       what I am doing now',
+    '/writing   what this site is about',
+    '/stack     how this site is built',
+    '/contact   contact links',
+    '/cv        open my online CV',
+    '/blog      back to the blog',
+    '/zh /en    switch language',
+    '/clear     clear output'
+  ];
+
+  function print(text, cls) {
+    var p = document.createElement('p');
+    if (cls) p.className = cls;
+    p.textContent = text;
+    output.appendChild(p);
+    var scroller = document.getElementById('terminal-content');
+    if (scroller) scroller.scrollTop = scroller.scrollHeight;
+  }
+  function printMany(lines) { lines.forEach(function (l) { print(l); }); }
+
+  function scrollToId(id) {
+    var el = document.querySelector(id);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function run(raw) {
+    var cmd = raw.trim();
+    if (!cmd) return;
+    var isZh = root.getAttribute('data-lang') === 'zh';
+    print('/lyi $ ' + cmd, 'cmd-echo');
+
+    switch (cmd.toLowerCase()) {
+      case '/help':
+      case 'help':
+        printMany(isZh ? HELP_ZH : HELP_EN); break;
+      case '/about':
+        scrollToId('#about-me'); print(isZh ? 'cd ~/about' : 'cd ~/about'); break;
+      case '/now':
+        scrollToId('#now'); print('cd ~/now'); break;
+      case '/writing':
+        scrollToId('#writing'); print('cd ~/writing'); break;
+      case '/stack':
+        scrollToId('#stack'); print('cd ~/stack'); break;
+      case '/contact':
+        scrollToId('#contact'); print('cd ~/contact'); break;
+      case '/cv':
+        print(isZh ? '正在打开 /portfolio/ ...' : 'opening /portfolio/ ...');
+        window.location.href = '/portfolio/'; break;
+      case '/blog':
+        print(isZh ? '返回博客 ...' : 'back to blog ...');
+        window.location.href = '/'; break;
+      case '/zh':
+        currentLang = 'zh'; applyLanguage('zh'); print('language = zh-CN'); break;
+      case '/en':
+        currentLang = 'en'; applyLanguage('en'); print('language = en'); break;
+      case '/clear':
+        output.innerHTML = ''; break;
+      case 'whoami':
+        print(isZh ? 'Lyi — 跨境电商运营 / 自动化爱好者' : 'Lyi — cross-border e-commerce operator / automation tinkerer'); break;
+      case 'ls':
+        print('about  now  writing  stack  contact  cv  blog'); break;
+      default:
+        print((isZh ? 'command not found: ' : 'command not found: ') + cmd + (isZh ? ' —— 试试 /help' : ' — try /help'), 'cmd-error');
+    }
+  }
+
+  if (input) {
+    var resizeInput = function () {
+      var n = Math.max(2, (input.value || '').length + 1);
+      input.style.width = n + 'ch';
+    };
+    input.addEventListener('input', resizeInput);
+    resizeInput();
+    input.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        run(input.value);
+        input.value = '';
+      }
+    });
+  }
+  if (prompt) {
+    prompt.addEventListener('click', function () { if (input) input.focus(); });
+  }
+  window.addEventListener('keydown', function (e) {
+    if (e.key === '/' && document.activeElement !== input) {
+      e.preventDefault();
+      if (input) input.focus();
+    }
+  });
+
+  // Deep link: /about/?cmd=/help runs one command on load (handy for sharing).
+  var autoCmd = new URLSearchParams(window.location.search).get('cmd');
+  if (autoCmd) setTimeout(function () { run(autoCmd); }, 500);
+})();
+</script>
+</body>
+</html>
