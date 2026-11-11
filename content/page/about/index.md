@@ -4,15 +4,12 @@ description: Lyi，跨境电商运营。这里记录跨境电商、自动化，�
 date: 2026-01-26
 lastmod: 2026-10-19
 slug: about
-layout: about
 menu:
     main:
         weight: -90
         params:
             icon: user
 ---
-
-<!-- 本页由 layouts/page/about.html 渲染（终端风格，中英双语）；要改文案请改该模板。 -->
 
 我在这里记录三件事：正在做的运营、正在用的自动化，以及读过的书。它们大多来自具体问题，而不是阅读清单。
 
@@ -43,6 +40,6 @@ Hugo + Stack 主题，托管在 GitHub Pages。内容只有一份，通过 Hugo 
 ## 联系
 
 - **GitHub**：[bxycode000](https://github.com/bxycode000)。有问题或想聊，开一个 issue 最快。
-- **RSS**：[订阅本站](/index.xml)。新文章会直接推到阅读器里。
+- **RSS**：[订阅本站](/blog/index.xml)。新文章会直接推到阅读器里。
 
 站内没有留言板，也没有邮件列表。阅读是单向的，反馈走 GitHub 就够了。
