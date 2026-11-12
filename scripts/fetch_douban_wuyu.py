@@ -427,7 +427,13 @@ def main():
     for group in rows:
         for row in rows[group]:
             row['intro'] = fallback_intro(row)
-        rows[group].sort(key=lambda r: r.get('finished') or '0000-00-00', reverse=True)
+        # 先按本人评分（5 星在前），再按豆瓣评分从高到低；缺豆瓣评分的排后面
+        rows[group].sort(key=lambda r: (
+            -(r.get('my_rating') or 0),
+            -(float(r.get('douban_rating') or 0)),
+            -(r.get('douban_votes') or 0),
+            r.get('title') or '',
+        ))
 
     jobs = [row for group in rows.values() for row in group]
     print('covers', len(jobs), flush=True)
