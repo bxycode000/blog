@@ -8,9 +8,10 @@
 数据来源：豆瓣用户公开的「书影音游」收藏（interests API）。
 只保留状态为「看过 / 读过 / 听过 / 玩过」且本人评分 4 星或 5 星的记录。
 
-分类规则：
-    - 电影权重高于漫剧：subtype = movie，或集数为 1 的条目 → 电影
-      （包括动画电影、OVA/OAD；《超能陆战队》《起风了》《白蛇：缘起》都归电影）
+分类规则（按优先级）：
+    - 标题或简介出现 OVA / OAD → 漫剧（即使简介同时有「电影」「剧场版」也归漫剧）
+    - 标题或简介出现「剧场版 / 电影 / 短片」→ 电影
+    - subtype = movie 且无以上关键词 → 电影（电影大类优先，含动画电影）
     - subtype = tv，或集数 > 1 → 漫剧（动画剧集 + 真人剧集）
     - 书籍排除网文（辰东等网文作者、常见网文标题）
     - 音乐仍只收 5 星（与上一版保持一致）
@@ -77,8 +78,14 @@ ANIME_TITLE_HINTS = (
 ANIME_TITLE_RE = re.compile(r'(OAD|OVA|剧场版|劇場版|第\d+[话話]|总集篇|特别篇|TV版|动画|动漫)', re.I)
 
 
-def is_anime(title, genres, subtype, sid, episodes=None):
-    """电影大类优先：集数可判定时先看集数，只有剧集才归漫剧。"""
+def is_anime(title, intro, genres, subtype, sid, episodes=None):
+    """OVA/OAD 优先归漫剧；剧场版/电影/短片归电影；其余按 subtype/集数。"""
+    text = (title or '') + '\n' + (intro or '')
+    upper = text.upper()
+    if 'OVA' in upper or 'OAD' in upper:
+        return True
+    if any(k in text for k in ('剧场版', '劇場版', '电影', '短片')):
+        return False
     if episodes not in (None, '', 0, '0'):
         try:
             return int(episodes) > 1
@@ -220,7 +227,7 @@ def build_rows(uid: str):
         sid = str(s.get('id'))
         subtype = s.get('subtype') or ''
         genres = [x for x in (s.get('genres') or []) if isinstance(x, str)]
-        kind = 'anime' if is_anime(s.get('title') or '', genres, subtype, sid, s.get('episodes_count')) else 'movie'
+        kind = 'anime' if is_anime(s.get('title') or '', s.get('intro') or '', genres, subtype, sid, s.get('episodes_count')) else 'movie'
         row = {
             'id': sid, 'kind': kind, 'title': s.get('title') or '',
             'original_title': '', 'year': str(s.get('year') or year_of(s.get('card_subtitle'))),
