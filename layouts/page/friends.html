@@ -6,7 +6,7 @@
 {{- $avatarFallback := .Site.Params.sidebar.avatarFallback | default $avatar -}}
 <div class="friends-wrap">
     <header class="friends-hero">
-        <p class="friends-kicker">FRIENDS · 友链</p>
+        <p class="friends-kicker">LINKS · 链接</p>
         <h1 class="friends-title">{{ .Title }}</h1>
         <p class="friends-intro">{{ with .Description }}{{ . }}{{ else }}以文会友，以友辅仁。这里收集常读的博客和朋友们的站点。{{ end }}</p>
         <span class="friends-rule" aria-hidden="true"></span>
@@ -43,7 +43,7 @@
     <section class="friends-section" aria-labelledby="friends-list-title">
         <div class="friends-section__head">
             <h2 class="friends-section__title" id="friends-list-title"><span class="friends-section__dot" aria-hidden="true"></span>友情链接</h2>
-            <span class="friends-section__count">{{ len $friends }} 位朋友</span>
+            <span class="friends-section__count">{{ len $friends }} 个站点</span>
         </div>
 
         {{- if $friends }}
@@ -81,7 +81,7 @@
                         <span class="friend-card__name">虚位以待</span>
                         <svg class="friend-card__arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7"/><path d="M9 7h8v8"/></svg>
                     </span>
-                    <span class="friend-card__desc">这里还留着一个位置。想交换友链的话，欢迎联系我。</span>
+                    <span class="friend-card__desc">这里还留着一个位置。想交换链接的话，欢迎联系我。</span>
                 </span>
             </a>
             {{- end }}
@@ -89,7 +89,7 @@
         {{- else }}
         <div class="friends-empty">
             <span class="friends-empty__icon" aria-hidden="true">{{ partial "helper/icon" "heart-handshake" }}</span>
-            <b>还没有友链</b>
+            <b>还没有链接</b>
             <p>在 <code>data/friends.yml</code> 里添加第一条吧：写上名字、网址、头像和一句话简介，它就会出现在这里。</p>
         </div>
         {{- end }}
@@ -97,7 +97,7 @@
 
     <p class="friends-outro">
         <span class="friends-outro__icon" aria-hidden="true">{{ partial "helper/icon" "heart-handshake" }}</span>
-        <span>想交换友链？欢迎通过 <a href="{{ "about/" | relURL }}">关于页</a> 或 GitHub 联系我，附上站点名称、地址、头像与简介即可。</span>
+        <span>想交换链接？欢迎通过 <a href="{{ "about/" | relURL }}">关于页</a> 或 GitHub 联系我，附上站点名称、地址、头像与简介即可。</span>
     </p>
 </div>
 

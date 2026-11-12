@@ -1,18 +1,103 @@
 # =========================================================
-# 友链数据 · data/friends.yml
+# 友情链接数据 · data/friends.yml
 # =========================================================
-# 每条友链支持以下字段：
+# 每条链接支持以下字段：
 #   name        必填 · 站点名称
 #   url         必填 · 站点地址（记得带 https://）
-#   avatar      可选 · 头像图片地址；留空或加载失败时显示名称首字占位
+#   avatar      可选 · 头像/站点图标地址；留空或加载失败时显示名称首字占位
 #   description 可选 · 一句话简介
-#   note        可选 · 备注（相识缘由、更新情况等），显示在卡片底部
+#   note        可选 · 备注，显示在卡片底部
 #
-# 添加新友链：照着下面的格式在文件末尾追加一条即可，构建时会自动渲染。
-# 示例（目前仅 1 条，其余请按需补充）：
+# 添加新链接：照着下面的格式在文件末尾追加一条即可，构建时会自动渲染。
 
-- name: 第三夏尔 | Third Shire
-  url: https://thirdshire.com/
-  avatar: https://thirdshire.com/blackcat_avatar.jpg
-  description: 认真生活，积极摸鱼
-  note: 这次设计参考的博客
+- name: "Elainafan"
+  url: "https://www.elainafan.one/"
+  avatar: "https://www.elainafan.one/img/elainafan.jpg"
+  description: "痛饮所有踌躇之后？记录编程、算法、音乐、动画与建站折腾。"
+
+- name: "Soulter's Blog"
+  url: "https://blog.soulter.top/"
+  description: "记录技术、折腾与生活的个人博客。"
+
+- name: "niina's blog"
+  url: "https://blog.niina.fun/"
+  avatar: "https://blog.niina.fun/favicon.ico"
+  description: "niina"
+
+- name: "tada-zako"
+  url: "https://tada-zako.top/"
+  avatar: "https://blog.tada-zako.top/assets/images/theme-img/Yanami_raft_favicon.png"
+  description: "记录日常与想法的个人博客。"
+
+- name: "一直游到海水變藍"
+  url: "https://nelsonboss.ink/"
+  avatar: "https://nelsonboss.ink/logo.webp"
+  description: "一直游到海水變藍。"
+
+- name: "时间回廊"
+  url: "https://xbtzone.com/blog/"
+  description: "记录技术与生活的博客。"
+
+- name: "AkiDAY. 孤星邮局"
+  url: "https://blog.akiday.com/"
+  avatar: "https://blog.akiday.com/favicon.png"
+  description: "永远是秋日有多好。"
+
+- name: "Love on the page"
+  url: "https://kiseki.blog/"
+  avatar: "https://api.fuukei.org/myriad/frontend/public/siteicon.ico"
+  description: "It's the ink our story's penned"
+
+- name: "Gargantua'Blog"
+  url: "https://catdfd.com/"
+  avatar: "https://catdfd.com/img/fluid.png"
+  description: "记录技术与思考的个人博客。"
+
+- name: "United Pooh"
+  url: "https://unitedpooh.top/"
+  description: "United Pooh 的文章与实验。"
+
+- name: "雨落川"
+  url: "https://blog.yangzy.top/"
+  avatar: "https://assets.yangzy.top/avator.jpg"
+  description: "记录前端与后端的学习过程、实战心得与生活灵感。"
+
+- name: "西贝的代码宇宙"
+  url: "https://mrsibe.top/"
+  avatar: "https://mrsibe.top/favicon.ico"
+  description: "在星辰与字节之间，写下一行属于宇宙的代码。"
+
+- name: "Eric-Terminal 的博客"
+  url: "https://blog.ericterminal.com/"
+  avatar: "https://assets.ericterminal.com/logo-transparent.png"
+  description: "探究网络底层逻辑与密码学原理，追求极致的技术掌控力。"
+
+- name: "梦辰の小窝"
+  url: "https://mc.mimeng.top/"
+  avatar: "https://mc.mimeng.top/favicon/logo.png"
+  description: "Eagerly Anticipating Our Reunion"
+
+- name: "XnneHang"
+  url: "https://xnnehang.top/"
+  avatar: "https://xnnehang.top/favicon/favicon-light-32.png"
+  description: "写代码是因为爱。"
+
+- name: "distjr_的博客"
+  url: "https://blog.distjr.top/"
+  avatar: "https://blog.distjr.top/favicon.png"
+  description: "distjr_'s blog"
+
+- name: "Darky's Blog"
+  url: "https://darkyzhou.net/"
+  avatar: "https://darkyzhou.net/assets/apple-touch-icon.png"
+  description: "记录技术与生活的个人博客。"
+
+- name: "Lyc8503's blog"
+  url: "https://blog.lyc8503.net/"
+  avatar: "https://blog.lyc8503.net/img/favicon.ico"
+  description: "Coding 相关的记录，也随机掉落一些日常感想。"
+
+- name: "Nagi 的博客"
+  url: "https://blog.nagi.fun/zh"
+  avatar: "https://blog.nagi.fun/favicon-32.png"
+  description: "关于机器学习、大语言模型、强化学习与生成模型的技术文章与实验记录。"
