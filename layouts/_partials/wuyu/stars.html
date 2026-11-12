@@ -1,0 +1,2 @@
+{{- $rating := . | default 5 -}}
+<span class="wuyu-stars" aria-label="我的评分：{{ $rating }} 星">{{- range seq 5 -}}<i{{ if le . $rating }} class="is-full"{{ end }}>★</i>{{- end -}}</span>

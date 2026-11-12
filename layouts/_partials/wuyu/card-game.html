@@ -1,0 +1,21 @@
+{{- $item := . -}}
+{{- $cover := $item.cover | default "" -}}
+{{- $developers := delimit ($item.developers | default slice) " / " -}}
+{{- $platforms := first 3 ($item.platforms | default slice) -}}
+<button class="wuyu-card wuyu-card--games" type="button" data-wuyu-open="wuyu-{{ $item.kind }}-{{ $item.id }}" data-search="{{ $item.title }} {{ $item.original_title }} {{ $developers }} {{ $item.year }} {{ delimit ($item.platforms | default slice) " " }} {{ delimit ($item.genres | default slice) " " }}" style="--hue:{{ $item.hue | default 210 }}" aria-label="查看《{{ $item.title }}》详情">
+    <span class="wuyu-game">
+        <span class="wuyu-cover">
+            <span class="wuyu-cover__fallback"><b>{{ $item.title }}</b><em>{{ $item.year }}</em></span>
+            {{- with $cover }}<img src="{{ . | relURL }}" alt="{{ $item.title }} 封面" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.style.display='none'">{{ end }}
+        </span>
+        <span class="wuyu-poster__badge">{{ partial "wuyu/stars" $item.my_rating }}</span>
+        {{- with $platforms }}<span class="wuyu-game__platforms">{{ range . }}<span>{{ . }}</span>{{ end }}</span>{{ end }}
+    </span>
+    <span class="wuyu-caption">
+        <strong>{{ $item.title }}</strong>
+        <em>{{ $developers }}{{ with $item.year }} · {{ . }}{{ end }}{{ with $item.my_rating }} · {{ . }} 星{{ end }}</em>
+    </span>
+</button>
+<template id="wuyu-{{ $item.kind }}-{{ $item.id }}">
+    {{ partial "wuyu/detail-game" $item }}
+</template>

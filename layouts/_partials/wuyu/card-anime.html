@@ -20,7 +20,7 @@
         {{- with $blurb }}<span class="wuyu-anime__comment">{{ . }}</span>{{ end }}
         <span class="wuyu-anime__footer">
             <span>{{ with $item.year }}{{ . }}{{ end }}{{ with $item.episodes }} · {{ . }} 集{{ end }}</span>
-            <span>看过 · 五星</span>
+            <span>看过 · {{ $item.my_rating }} 星</span>
         </span>
     </span>
 </button>

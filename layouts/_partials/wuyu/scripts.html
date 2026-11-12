@@ -10,13 +10,15 @@
         books: 'wuyu-panel-books',
         movies: 'wuyu-panel-movies',
         anime: 'wuyu-panel-anime',
-        music: 'wuyu-panel-music'
+        music: 'wuyu-panel-music',
+        games: 'wuyu-panel-games'
     };
     var panelToKey = {
         'wuyu-panel-books': 'books',
         'wuyu-panel-movies': 'movies',
         'wuyu-panel-anime': 'anime',
-        'wuyu-panel-music': 'music'
+        'wuyu-panel-music': 'music',
+        'wuyu-panel-games': 'games'
     };
 
     function activateTab(key, options) {
@@ -56,23 +58,51 @@
         if (keyToPanel[key]) activateTab(key);
     }
 
-    /* ---------- 搜索过滤 ---------- */
+    /* ---------- 搜索过滤 + 分批显示 ---------- */
+    var PAGE_SIZE = 72;
     Array.prototype.forEach.call(layout.querySelectorAll('.wuyu-panel'), function (panel) {
         var input = panel.querySelector('[data-wuyu-search]');
-        if (!input) return;
-        var cards = Array.prototype.slice.call(panel.querySelectorAll('.wuyu-card'));
+        var grid = panel.querySelector('[data-wuyu-grid]');
+        if (!input || !grid) return;
+        var cards = Array.prototype.slice.call(grid.querySelectorAll('.wuyu-card'));
         var empty = panel.querySelector('[data-wuyu-empty]');
-        input.addEventListener('input', function () {
+        var limit = PAGE_SIZE;
+        var more = null;
+
+        if (cards.length > PAGE_SIZE) {
+            more = document.createElement('button');
+            more.type = 'button';
+            more.className = 'wuyu-more';
+            grid.after(more);
+            more.addEventListener('click', function () {
+                limit += PAGE_SIZE;
+                render();
+            });
+        }
+
+        function render() {
             var query = input.value.trim().toLowerCase();
             var shown = 0;
-            cards.forEach(function (card) {
+            cards.forEach(function (card, index) {
                 var haystack = (card.getAttribute('data-search') || '').toLowerCase();
                 var match = !query || haystack.indexOf(query) !== -1;
-                card.hidden = !match;
-                if (match) shown += 1;
+                var visible = match && (query ? true : index < limit);
+                card.hidden = !visible;
+                if (visible) shown += 1;
             });
             if (empty) empty.classList.toggle('is-visible', shown === 0);
-        });
+            if (more) {
+                if (query || limit >= cards.length) {
+                    more.hidden = true;
+                } else {
+                    more.hidden = false;
+                    more.textContent = '显示更多（还有 ' + (cards.length - limit) + ' 条）';
+                }
+            }
+        }
+
+        input.addEventListener('input', render);
+        render();
     });
 
     /* ---------- 详情弹窗 ---------- */
@@ -122,7 +152,7 @@
     }
 
     function openModal(card) {
-        siblings = Array.prototype.slice.call(card.closest('[data-wuyu-grid]').querySelectorAll('.wuyu-card'));
+        siblings = Array.prototype.slice.call(card.closest('[data-wuyu-grid]').querySelectorAll('.wuyu-card:not([hidden])'));
         returnFocus = card;
         showCard(siblings.indexOf(card));
         modal.classList.add('is-open');

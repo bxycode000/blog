@@ -9,6 +9,7 @@ body.wuyu-page {
     --wuyu-movies: #a34838;
     --wuyu-anime: #3d7a6a;
     --wuyu-music: #6c5a8e;
+    --wuyu-games: #4d6a8a;
     --wuyu-glow: rgba(138, 90, 43, .055);
     background-image: radial-gradient(860px 420px at 66% -140px, var(--wuyu-glow), transparent 72%);
     background-repeat: no-repeat;
@@ -19,6 +20,7 @@ body.wuyu-page {
     --wuyu-movies: #e08f7a;
     --wuyu-anime: #7fc4b2;
     --wuyu-music: #b4a1e0;
+    --wuyu-games: #8fb3d9;
     --wuyu-glow: rgba(217, 174, 121, .06);
 }
 
@@ -102,7 +104,7 @@ body.wuyu-page {
 /* ---------- 分类 tabs ---------- */
 .wuyu-tabs {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: .75rem;
 }
 
@@ -130,6 +132,7 @@ body.wuyu-page {
 .wuyu-tab--movies { --accent: var(--wuyu-movies); }
 .wuyu-tab--anime  { --accent: var(--wuyu-anime); }
 .wuyu-tab--music  { --accent: var(--wuyu-music); }
+.wuyu-tab--games  { --accent: var(--wuyu-games); }
 
 .wuyu-tab::after {
     content: "";
@@ -245,6 +248,7 @@ body.wuyu-page {
 .wuyu-panel--movies { --panel-accent: var(--wuyu-movies); }
 .wuyu-panel--anime { --panel-accent: var(--wuyu-anime); }
 .wuyu-panel--music { --panel-accent: var(--wuyu-music); }
+.wuyu-panel--games { --panel-accent: var(--wuyu-games); }
 
 .wuyu-panel__count {
     font: 500 1.02rem/1.4 var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
@@ -310,6 +314,31 @@ body.wuyu-page {
 
 .wuyu-empty-filter.is-visible {
     display: block;
+}
+
+.wuyu-more {
+    display: block;
+    width: 100%;
+    margin-top: 1.4rem;
+    padding: .75rem 1rem;
+    color: var(--card-text-color-secondary);
+    font: 500 1.2rem/1.5 var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    letter-spacing: .06em;
+    border: 1px dashed var(--card-separator-color);
+    border-radius: 12px;
+    background: transparent;
+    cursor: pointer;
+    transition: color .15s ease, border-color .15s ease, background-color .15s ease;
+}
+
+.wuyu-more:hover {
+    color: var(--accent-color);
+    border-color: var(--accent-color);
+    background: var(--card-background);
+}
+
+.wuyu-more[hidden] {
+    display: none !important;
 }
 
 /* ---------- 通用封面 ---------- */
@@ -540,7 +569,7 @@ body.wuyu-page {
 .wuyu-stars {
     display: inline-flex;
     gap: 1px;
-    color: #f0b429;
+    color: rgba(128, 128, 128, .38);
     font-size: .8rem;
     line-height: 1;
     letter-spacing: .02em;
@@ -548,6 +577,10 @@ body.wuyu-page {
 
 .wuyu-stars i {
     font-style: normal;
+}
+
+.wuyu-stars i.is-full {
+    color: #f0b429;
 }
 
 .wuyu-poster__hover {
@@ -747,6 +780,76 @@ body.wuyu-page {
 .wuyu-card--music:hover .wuyu-album__sleeve,
 .wuyu-card--music:focus-visible .wuyu-album__sleeve {
     transform: translateX(-4px) rotate(-1.5deg);
+}
+
+/* ---------- 游戏：方形封面与平台角标 ---------- */
+.wuyu-grid--games {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 2rem 1.4rem;
+}
+
+.wuyu-card--games {
+    --panel-accent: var(--wuyu-games);
+}
+
+.wuyu-game {
+    position: relative;
+    display: block;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: 10px;
+    box-shadow:
+        0 18px 30px -16px rgba(10, 14, 22, .55),
+        0 2px 6px rgba(10, 14, 22, .12);
+    transition: transform .35s ease, box-shadow .35s ease;
+}
+
+.wuyu-card--games:hover .wuyu-game,
+.wuyu-card--games:focus-visible .wuyu-game {
+    transform: translateY(-6px);
+    box-shadow:
+        0 28px 40px -18px rgba(10, 14, 22, .6),
+        0 0 0 1px color-mix(in srgb, var(--wuyu-games) 60%, transparent);
+}
+
+.wuyu-game img {
+    transition: transform .6s cubic-bezier(.2, .75, .25, 1);
+}
+
+.wuyu-card--games:hover .wuyu-game img {
+    transform: scale(1.04);
+}
+
+.wuyu-game__platforms {
+    position: absolute;
+    right: .55rem;
+    bottom: .55rem;
+    left: .55rem;
+    z-index: 2;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .25rem;
+    justify-content: flex-end;
+}
+
+.wuyu-game__platforms span {
+    padding: .1rem .42rem;
+    color: #f4efe4;
+    font: 500 .82rem/1.5 var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    letter-spacing: .02em;
+    border-radius: 999px;
+    background: rgba(8, 10, 14, .58);
+    backdrop-filter: blur(4px);
+}
+
+.wuyu-detail--game .wuyu-detail__cover .wuyu-cover {
+    aspect-ratio: 1;
+    border-radius: 10px;
+}
+
+.wuyu-detail--game .wuyu-cover__fallback {
+    font-size: 19px;
 }
 
 /* ---------- 详情弹窗 ---------- */
@@ -1051,7 +1154,7 @@ body.wuyu-modal-open {
 
 .home-wuyu__grid {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 12px;
 }
 
@@ -1061,8 +1164,8 @@ body.wuyu-modal-open {
     display: flex;
     flex-direction: column;
     gap: 2px;
-    min-height: 88px;
-    padding: 14px 62px 13px 16px;
+    min-height: 96px;
+    padding: 14px 50px 13px 16px;
     overflow: hidden;
     border: 1px solid var(--card-separator-color);
     border-radius: 12px;
@@ -1075,6 +1178,7 @@ body.wuyu-modal-open {
 .home-wuyu__tile--movies { --accent: #a34838; }
 .home-wuyu__tile--anime { --accent: #3d7a6a; }
 .home-wuyu__tile--music { --accent: #6c5a8e; }
+.home-wuyu__tile--games { --accent: #4d6a8a; }
 
 :root[data-scheme="dark"] .home-wuyu__tile {
     --accent: #d9ae79;
@@ -1082,6 +1186,7 @@ body.wuyu-modal-open {
 :root[data-scheme="dark"] .home-wuyu__tile--movies { --accent: #e08f7a; }
 :root[data-scheme="dark"] .home-wuyu__tile--anime { --accent: #7fc4b2; }
 :root[data-scheme="dark"] .home-wuyu__tile--music { --accent: #b4a1e0; }
+:root[data-scheme="dark"] .home-wuyu__tile--games { --accent: #8fb3d9; }
 
 .home-wuyu__tile::after {
     content: "";
@@ -1119,9 +1224,9 @@ body.wuyu-modal-open {
 .home-wuyu__count {
     position: absolute;
     right: 14px;
-    bottom: 9px;
+    bottom: 8px;
     font-family: Georgia, "Times New Roman", serif;
-    font-size: 1.9rem;
+    font-size: 1.7rem;
     line-height: 1;
     color: var(--accent);
     opacity: .35;
@@ -1129,10 +1234,10 @@ body.wuyu-modal-open {
 
 .home-wuyu__thumb {
     position: absolute;
-    top: 10px;
+    top: 9px;
     right: 12px;
-    width: 36px;
-    height: 52px;
+    width: 30px;
+    height: 44px;
     object-fit: cover;
     border-radius: 4px;
     box-shadow: 0 6px 14px -8px rgba(20, 16, 10, .55);
@@ -1168,6 +1273,10 @@ body.wuyu-modal-open {
     .wuyu-tabs {
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: .55rem;
+    }
+
+    .wuyu-tab:last-child:nth-child(odd) {
+        grid-column: span 2;
     }
 
     .wuyu-tab {
@@ -1235,6 +1344,11 @@ body.wuyu-modal-open {
         padding-right: 1.5rem;
     }
 
+    .wuyu-grid--games {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 1.5rem 1rem;
+    }
+
     .wuyu-modal {
         align-items: flex-end;
         padding: 0;
@@ -1276,6 +1390,10 @@ body.wuyu-modal-open {
 
     .home-wuyu__grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .home-wuyu__tile:last-child:nth-child(odd) {
+        grid-column: span 2;
     }
 }
 

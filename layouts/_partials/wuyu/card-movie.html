@@ -7,7 +7,7 @@
             <span class="wuyu-cover__fallback"><b>{{ $item.title }}</b><em>{{ $item.year }}</em></span>
             {{- with $cover }}<img src="{{ . | relURL }}" alt="{{ $item.title }} 海报" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.style.display='none'">{{ end }}
         </span>
-        <span class="wuyu-poster__badge"><span class="wuyu-stars" aria-label="我的评分：五星"><i>★</i><i>★</i><i>★</i><i>★</i><i>★</i></span></span>
+        <span class="wuyu-poster__badge">{{ partial "wuyu/stars" $item.my_rating }}</span>
         {{- with $item.intro }}<span class="wuyu-poster__hover">{{ . | truncate 92 }}</span>{{ end }}
     </span>
     <span class="wuyu-caption">

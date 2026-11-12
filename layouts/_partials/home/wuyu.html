@@ -3,12 +3,13 @@
 {{- $movies := $data.movies | default slice -}}
 {{- $anime := $data.anime | default slice -}}
 {{- $music := $data.music | default slice -}}
-{{- $total := add (len $books) (add (len $movies) (add (len $anime) (len $music))) -}}
+{{- $games := $data.games | default slice -}}
+{{- $total := add (len $books) (add (len $movies) (add (len $anime) (add (len $music) (len $games)))) -}}
 {{- if $total -}}
 <section class="home-wuyu" aria-labelledby="home-wuyu-title">
     <div class="home-list-head">
         <h2 id="home-wuyu-title">物语</h2>
-        <a href="{{ "wuyu/" | relURL }}">书影音漫 · 全部 {{ $total }} 条 →</a>
+        <a href="{{ "wuyu/" | relURL }}">书影音漫游 · 全部 {{ $total }} 条 →</a>
     </div>
     <div class="home-wuyu__grid">
         <a class="home-wuyu__tile home-wuyu__tile--books" href="{{ "wuyu/" | relURL }}#books">
@@ -34,6 +35,12 @@
             <span class="home-wuyu__name">音乐</span>
             <span class="home-wuyu__count">{{ printf "%02d" (len $music) }}</span>
             {{- with $music }}{{ with index . 0 }}{{ with .cover }}<img class="home-wuyu__thumb" src="{{ . | relURL }}" alt="" loading="lazy" decoding="async">{{ end }}{{ end }}{{ end }}
+        </a>
+        <a class="home-wuyu__tile home-wuyu__tile--games" href="{{ "wuyu/" | relURL }}#games">
+            <span class="home-wuyu__en">Games</span>
+            <span class="home-wuyu__name">游戏</span>
+            <span class="home-wuyu__count">{{ printf "%02d" (len $games) }}</span>
+            {{- with $games }}{{ with index . 0 }}{{ with .cover }}<img class="home-wuyu__thumb" src="{{ . | relURL }}" alt="" loading="lazy" decoding="async">{{ end }}{{ end }}{{ end }}
         </a>
     </div>
 </section>

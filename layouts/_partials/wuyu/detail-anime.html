@@ -11,8 +11,8 @@
         <h3 class="wuyu-detail__title">{{ $item.title }}</h3>
         {{- with $item.original_title }}<p class="wuyu-detail__original">{{ . }}</p>{{ end }}
         <div class="wuyu-detail__rating">
-            <span class="wuyu-stars" aria-label="我的评分：五星"><i>★</i><i>★</i><i>★</i><i>★</i><i>★</i></span>
-            <span>我的评分 · 5 星</span>
+            {{ partial "wuyu/stars" $item.my_rating }}
+            <span>我的评分 · {{ $item.my_rating }} 星</span>
             {{- with $item.finished }}<span>· {{ . }}</span>{{ end }}
         </div>
         <dl class="wuyu-detail__meta">

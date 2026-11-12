@@ -1,19 +1,27 @@
 # -*- coding: utf-8 -*-
-"""同步豆瓣「书影音」五星记录到物语页。
+"""同步豆瓣「书影音游」四星 / 五星记录到物语页。
 
 用法：
-    python scripts/fetch_douban_wuyu.py                 # 默认用户 bxycode000
-    python scripts/fetch_douban_wuyu.py --user bxycode000 # 指定豆瓣用户
+    python scripts/fetch_douban_wuyu.py                 # 默认 UID 263906375
+    python scripts/fetch_douban_wuyu.py --uid 263906375
 
-数据来源：豆瓣用户公开的「看过 / 读过 / 听过」收藏页。
-只保留本人评分 5 星、且状态为「看过 / 读过 / 听过」的记录。
+数据来源：豆瓣用户公开的「书影音游」收藏（interests API）。
+只保留状态为「看过 / 读过 / 听过 / 玩过」且本人评分 4 星或 5 星的记录。
+
+分类规则：
+    - 豆瓣 subtype = tv（剧集）→ 漫剧
+    - subtype = movie 且类型含「动画」→ 漫剧
+    - 其余 subtype = movie → 电影
+    - 书籍排除网文（辰东等网文作者、常见网文标题）
+    - 音乐仍只收 5 星（与上一版保持一致）
+    - 游戏单独成类
 
 输出：
-    data/wuyu.json                 —— 页面数据（书籍 / 电影 / 漫剧 / 音乐）
-    static/wuyu/covers/*.webp      —— 本地封面（豆瓣图片有防盗链，必须本地化）
+    data/wuyu.json
+    static/wuyu/covers/*.webp
 
-依赖：requests、lxml、Pillow（本机 Python 环境已具备）。
-豆瓣对未登录访问有频率限制；脚本会缓存每一步，失败后重跑会从缓存继续。
+依赖：requests、lxml、Pillow。豆瓣有访问频率限制；脚本会缓存每一步，
+失败后重跑会从 .cache/douban-wuyu/ 继续。
 """
 from __future__ import annotations
 
@@ -35,35 +43,84 @@ ROOT = Path(__file__).resolve().parents[1]
 DATA_FILE = ROOT / 'data' / 'wuyu.json'
 COVER_DIR = ROOT / 'static' / 'wuyu' / 'covers'
 CACHE_DIR = ROOT / '.cache' / 'douban-wuyu'
+UID = '263906375'
 
 UA_MOBILE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1'
 UA_DESKTOP = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0 Safari/537.36'
 
-GENRES = {
-    '剧情', '喜剧', '爱情', '科幻', '动画', '悬疑', '惊悚', '恐怖', '纪录片', '短片',
-    '情色', '音乐', '歌舞', '家庭', '儿童', '传记', '历史', '战争', '犯罪', '西部',
-    '奇幻', '冒险', '灾难', '武侠', '古装', '运动', '黑色电影', '真人秀', '脱口秀',
-    '舞台艺术', '同性', '戏曲', '动作', '鬼怪', '青春', '校园', '日常', '治愈', '热血',
-    '流行', '摇滚', '民谣', '电子', '爵士', '古典', '嘻哈', '乡村', '金属', '朋克',
-    '原声', '世界音乐', '轻音乐', '蓝调', '灵魂乐', '雷鬼', 'R&B', 'J-Pop', 'K-Pop',
+WEB_NOVEL_AUTHORS = {
+    '辰东', '唐家三少', '天蚕土豆', '我吃西红柿', '爱潜水的乌贼', '耳根', '忘语', '猫腻',
+    '烽火戏诸侯', '蝴蝶蓝', '萧鼎', '南派三叔', '天下霸唱', '梦入神机', '血红', '骷髅精灵',
+    '跳舞', '月关', '烟雨江南', '愤怒的香蕉', '会说话的肘子', '卖报小郎君', '宅猪',
+    '净无痕', '逆苍天', '善良的蜜蜂', '乱世狂刀', '鱼人二代', '打眼', '何常在', '骁骑校',
+    '孑与2', '七月新番', '榴弹怕水', '老鹰吃小鸡', '言归正传', '错哪儿了', '黑山老鬼',
+    '狐尾的笔', '风凌天下', '傲无常', '赤虎', '高楼大厦', '缘分0',
 }
-COUNTRIES = {
-    '中国', '中国大陆', '中国香港', '中国台湾', '美国', '英国', '日本', '韩国', '法国',
-    '德国', '意大利', '西班牙', '印度', '泰国', '加拿大', '澳大利亚', '俄罗斯', '瑞典',
-    '丹麦', '挪威', '芬兰', '荷兰', '比利时', '波兰', '捷克', '巴西', '墨西哥', '阿根廷',
-    '新西兰', '爱尔兰', '奥地利', '瑞士', '土耳其', '伊朗', '以色列', '新加坡', '马来西亚',
-    '越南', '菲律宾', '印度尼西亚',
+WEB_NOVEL_TITLES = (
+    '完美世界', '遮天', '神墓', '斗破苍穹', '斗罗大陆', '凡人修仙传', '仙逆', '牧神记',
+    '诡秘之主', '庆余年', '大奉打更人', '轮回乐园', '赤心巡天', '宿命之环', '道诡异仙',
+    '剑来', '雪中悍刀行', '赘婿', '武动乾坤', '大主宰', '元尊', '圣墟', '深空彼岸',
+    '夜无疆', '万相之王', '一世之尊', '灭运图录', '奥术神座', '长夜余火',
+)
+
+# 豆瓣有些动画电影 / OVA 的 genres 里没有「动画」，用片名与已知条目补充
+MANUAL_ANIME_IDS = {
+    '1307031', '27080656', '11639334', '26605865', '1764366', '26946612', '4826778',
+    '1860453', '2085498', '20378834', '3217118', '1763899', '1763916', '3044673',
+    '3263410', '1295064', '11026735', '3017508', '1937946',
 }
+ANIME_TITLE_HINTS = (
+    '星际牛仔', '普罗米亚', '僵尸吗', '伪恋', '我的女神', '狐妖小红娘', '未来日记',
+    '海贼王', '散华礼弥', '天元突破', '蜡笔小新', '城市猎人', '超能陆战队', '穿越时空的少女',
+    '浪客剑心',
+)
+ANIME_TITLE_RE = re.compile(r'(OAD|OVA|剧场版|劇場版|第\d+[话話]|总集篇|特别篇|TV版|动画|动漫)', re.I)
+
+
+def is_anime(title, genres, subtype, sid):
+    if subtype == 'tv':
+        return True
+    if '动画' in (genres or []):
+        return True
+    if sid in MANUAL_ANIME_IDS:
+        return True
+    if ANIME_TITLE_RE.search(title or ''):
+        return True
+    if any(h in (title or '') for h in ANIME_TITLE_HINTS):
+        if '浪客剑心' in (title or '') and '最终章' in (title or ''):
+            return False
+        return True
+    return False
 
 
 def session() -> requests.Session:
     s = requests.Session()
-    bid = ''.join(random.choices(string.ascii_letters + string.digits, k=11))
-    s.cookies.set('bid', bid, domain='.douban.com')
+    s.cookies.set('bid', ''.join(random.choices(string.ascii_letters + string.digits, k=11)), domain='.douban.com')
     return s
 
 
-def fetch(url: str, cache: Path, headers: dict, retries: int = 3) -> str:
+def fetch_json(url: str, cache: Path, headers: dict, retries: int = 5):
+    cache.parent.mkdir(parents=True, exist_ok=True)
+    if cache.exists():
+        try:
+            return json.loads(cache.read_text(encoding='utf-8'))
+        except Exception:
+            pass
+    for attempt in range(retries):
+        try:
+            r = session().get(url, headers=headers, timeout=30)
+            if r.status_code == 200:
+                d = r.json()
+                cache.write_text(json.dumps(d, ensure_ascii=False), encoding='utf-8')
+                time.sleep(0.3)
+                return d
+            time.sleep(1.5 + attempt)
+        except Exception:
+            time.sleep(1.5 + attempt)
+    return None
+
+
+def fetch_text(url: str, cache: Path, headers: dict, retries: int = 4) -> str:
     cache.parent.mkdir(parents=True, exist_ok=True)
     if cache.exists() and cache.stat().st_size > 5000:
         return cache.read_text(encoding='utf-8', errors='ignore')
@@ -74,368 +131,325 @@ def fetch(url: str, cache: Path, headers: dict, retries: int = 3) -> str:
                 cache.write_bytes(r.content)
                 time.sleep(0.5)
                 return r.content.decode('utf-8', 'ignore')
-            time.sleep(1.5)
+            time.sleep(1.5 + attempt)
         except Exception:
-            time.sleep(1.5)
+            time.sleep(1.5 + attempt)
     return ''
 
 
-def txt(el) -> str:
-    return ' '.join(el.text_content().split()) if el is not None else ''
+def names(lst):
+    out = []
+    for x in lst or []:
+        if isinstance(x, dict):
+            n = x.get('name') or x.get('cn_name') or ''
+            if n:
+                out.append(n)
+        elif isinstance(x, str) and x:
+            out.append(x)
+    return out
 
 
-def get_id(url: str) -> str:
-    m = re.search(r'/subject/(\d+)', url or '')
-    return m.group(1) if m else ''
-
-
-def year_of(s: str) -> str:
+def year_of(s):
     m = re.search(r'(19|20)\d{2}', s or '')
     return m.group(0) if m else ''
 
 
-def date_of(s: str) -> str:
+def date_of(s):
     m = re.search(r'((?:19|20)\d{2}-\d{2}-\d{2})', s or '')
     return m.group(1) if m else ''
 
 
-def hue_of(sid: str) -> int:
+def hue_of(sid):
     return int(hashlib.md5(str(sid).encode()).hexdigest()[:6], 16) % 360
 
 
-# ---------- 收藏页 ----------
-
-def parse_collection_movie(src: dict):
-    parts = [p.strip() for p in re.split(r'\s*/\s*', src.get('intro', '')) if p.strip()]
-    genres = [p for p in parts if p in GENRES]
-    countries = [p for p in parts if p in COUNTRIES]
-    duration = next((p for p in parts if re.fullmatch(r'\d+\s*分钟', p)), '')
-    director = ''
-    try:
-        idx = parts.index(duration)
-        if idx > 0:
-            director = parts[idx - 1]
-    except ValueError:
-        pass
-    return genres, countries, duration, director, year_of(src.get('intro', ''))
-
-
-def scrape_movies(user: str):
-    rows, seen = [], set()
-    for page in range(0, 101):
-        start = page * 15
-        url = (f'https://movie.douban.com/people/{user}/collect?start={start}'
-               f'&sort=rating&rating=5&filter=all&mode=grid&tags_sort=count&type=all')
-        html = fetch(url, CACHE_DIR / f'movie_list_{start}.html',
-                     {'User-Agent': UA_DESKTOP, 'Referer': 'https://movie.douban.com/'})
-        if not html:
+def fetch_interests(uid: str, kind: str):
+    cache = CACHE_DIR / 'interests'
+    first = fetch_json(
+        f'https://m.douban.com/rexxar/api/v2/user/{uid}/interests?type={kind}&start=0&count=50',
+        cache / f'{kind}_0.json',
+        {'User-Agent': UA_MOBILE, 'Referer': 'https://m.douban.com/'},
+    )
+    if not first:
+        return []
+    total = first.get('total', 0)
+    items = list(first.get('interests', []))
+    seen = {x['subject']['id'] for x in items}
+    start = len(items)
+    while start < total:
+        d = fetch_json(
+            f'https://m.douban.com/rexxar/api/v2/user/{uid}/interests?type={kind}&start={start}&count=50',
+            cache / f'{kind}_{start}.json',
+            {'User-Agent': UA_MOBILE, 'Referer': 'https://m.douban.com/'},
+        )
+        if not d:
             break
-        doc = lxml.html.fromstring(html)
-        items = doc.xpath('//div[contains(@class,"grid-view")]//div[contains(@class,"item")]')
-        if not items:
+        batch = d.get('interests', [])
+        if not batch:
             break
-        ratings = [(x.xpath('.//span[contains(@class,"rating")]/@class') or [''])[0] for x in items]
-        if all(r != 'rating5-t' for r in ratings):
-            break
-        for it, rating in zip(items, ratings):
-            if rating != 'rating5-t':
-                continue
-            a = it.xpath('.//li[contains(@class,"title")]/a[1]')
-            if not a:
-                continue
-            ta = a[0]
-            href = ta.get('href')
-            if href in seen:
-                continue
-            seen.add(href)
-            img = it.xpath('.//div[contains(@class,"pic")]//img')
-            rows.append({
-                'href': href,
-                'title': ' '.join(ta.text_content().split()),
-                'intro': ' '.join((it.xpath('.//li[contains(@class,"intro")]')[0].text_content()
-                                   if it.xpath('.//li[contains(@class,"intro")]') else '').split()),
-                'date': it.xpath('string(.//span[contains(@class,"date")])').strip(),
-                'cover': img[0].get('src') if img else '',
-                'comment': ' '.join((it.xpath('.//div[contains(@class,"comment")]')[0].text_content()
-                                     if it.xpath('.//div[contains(@class,"comment")]') else '').split()),
-            })
-    return rows
+        for x in batch:
+            sid = x['subject']['id']
+            if sid not in seen:
+                seen.add(sid)
+                items.append(x)
+        start += len(batch)
+    return items
 
 
-def scrape_subjects(user: str, kind: str):
-    """kind: book / music，收藏页可直接用 rating=5 过滤。"""
-    rows, seen = [], set()
-    for page in range(0, 20):
-        start = page * 15
-        domain = 'book' if kind == 'book' else 'music'
-        url = (f'https://{domain}.douban.com/people/{user}/collect?start={start}'
-               f'&sort=rating&rating=5&filter=all&mode=grid&tags_sort=count')
-        html = fetch(url, CACHE_DIR / f'{kind}_list_{start}.html',
-                     {'User-Agent': UA_DESKTOP, 'Referer': f'https://{domain}.douban.com/'})
-        if not html:
-            break
-        doc = lxml.html.fromstring(html)
-        if kind == 'book':
-            items = doc.xpath('//li[contains(@class,"subject-item")]')
-        else:
-            items = doc.xpath('//div[contains(@class,"grid-view")]//div[contains(@class,"item")]')
-        if not items:
-            break
-        for it in items:
-            if kind == 'book':
-                a = it.xpath('.//div[contains(@class,"info")]//h2//a')
-                if not a:
-                    continue
-                ta = a[0]
-                href = ta.get('href')
-                if href in seen:
-                    continue
-                seen.add(href)
-                img = it.xpath('.//div[contains(@class,"pic")]//img')
-                rows.append({
-                    'href': href,
-                    'title': ' '.join(ta.text_content().split()),
-                    'pub': ' '.join((it.xpath('.//div[contains(@class,"pub")]')[0].text_content()
-                                     if it.xpath('.//div[contains(@class,"pub")]') else '').split()),
-                    'date': ' '.join((it.xpath('.//span[contains(@class,"date")]')[0].text_content()
-                                      if it.xpath('.//span[contains(@class,"date")]') else '').split()),
-                    'cover': img[0].get('src') if img else '',
-                    'comment': ' '.join((it.xpath('.//p[contains(@class,"comment")]')[0].text_content()
-                                         if it.xpath('.//p[contains(@class,"comment")]') else '').split()),
-                })
-            else:
-                a = it.xpath('.//li[contains(@class,"title")]/a[1]')
-                if not a:
-                    continue
-                ta = a[0]
-                href = ta.get('href')
-                if href in seen:
-                    continue
-                seen.add(href)
-                img = it.xpath('.//div[contains(@class,"pic")]//img')
-                rows.append({
-                    'href': href,
-                    'title': ' '.join(ta.text_content().split()),
-                    'intro': ' '.join((it.xpath('.//li[contains(@class,"intro")]')[0].text_content()
-                                       if it.xpath('.//li[contains(@class,"intro")]') else '').split()),
-                    'date': it.xpath('string(.//span[contains(@class,"date")])').strip(),
-                    'cover': img[0].get('src') if img else '',
-                    'comment': ' '.join((it.xpath('.//div[contains(@class,"comment")]')[0].text_content()
-                                         if it.xpath('.//div[contains(@class,"comment")]') else '').split()),
-                })
-        if len(items) < 15:
-            break
-    return rows
-
-
-# ---------- 详情页 ----------
-
-def parse_mobile(kind: str, sid: str):
-    html = fetch(f'https://m.douban.com/{kind}/subject/{sid}/',
-                 CACHE_DIR / 'mobile' / f'{kind}_{sid}.html',
-                 {'User-Agent': UA_MOBILE, 'Referer': 'https://m.douban.com/'})
-    if not html:
+def fetch_detail(kind: str, sid: str, allow_api: bool = True):
+    cache = CACHE_DIR / 'details' / f'{kind}_{sid}.json'
+    if cache.exists():
+        try:
+            return json.loads(cache.read_text(encoding='utf-8'))
+        except Exception:
+            pass
+    if not allow_api:
         return {}
-    doc = lxml.html.fromstring(html)
-    out = {
-        'title': txt(doc.xpath('//div[contains(@class,"sub-title")]')[0]) if doc.xpath('//div[contains(@class,"sub-title")]') else '',
-        'original': txt(doc.xpath('//div[contains(@class,"sub-original-title")]')[0]) if doc.xpath('//div[contains(@class,"sub-original-title")]') else '',
-        'sub_info': [txt(x) for x in doc.xpath('//div[contains(@class,"sub-info")]')],
-        'sub_meta': txt(doc.xpath('//div[contains(@class,"sub-meta")]')[0]) if doc.xpath('//div[contains(@class,"sub-meta")]') else '',
-        'og_image': (doc.xpath('//meta[@property="og:image"]/@content') or [''])[0],
-    }
-    intro = ''
-    for sel in ('//section[contains(@class,"subject-intro")]//p',
-                '//section[contains(@class,"subject-section_intro")]//p',
-                '//section[contains(@class,"subject-intro")]',
-                '//section[contains(@class,"subject-section_intro")]'):
-        els = doc.xpath(sel)
-        if els and txt(els[0]):
-            intro = txt(els[0])
-            break
-    if not intro:
-        md = doc.xpath('//meta[@name="description"]/@content')
-        if md:
-            m = re.search(r'简介[：:]\s*(.*)$', md[0], re.S)
-            if m:
-                intro = m.group(1).strip()
-    for prefix in ('剧集简介', '电影简介', '影片简介', '内容简介', '唱片简介', '简介'):
-        if intro.startswith(prefix):
-            intro = intro[len(prefix):].strip()
-    out['intro'] = intro
-    return out
+    d = fetch_json(
+        f'https://m.douban.com/rexxar/api/v2/{kind}/{sid}',
+        cache,
+        {'User-Agent': UA_MOBILE, 'Referer': 'https://m.douban.com/'},
+    )
+    return d or {}
 
 
-def build_movie(src: dict) -> dict:
-    sid = get_id(src['href'])
-    mob = parse_mobile('movie', sid)
-    genres, countries, duration, director, cb_year = parse_collection_movie(src)
-    original = re.sub(r'[（(]\d{4}[）)]\s*$', '', mob.get('original', '')).strip()
-    return {
-        'id': sid, 'kind': 'movie',
-        'title': mob.get('title') or (src.get('title') or '').split(' / ')[0].strip(),
-        'original_title': original,
-        'year': year_of(mob.get('original', '')) or cb_year,
-        'cover': mob.get('og_image') or src.get('cover', ''),
-        'douban_rating': None, 'douban_votes': None,
-        'intro': mob.get('intro', ''),
-        'genres': genres, 'url': src['href'], 'finished': src.get('date', ''),
-        'my_comment': src.get('comment', ''),
-        'directors': [director] if director else [], 'actors': [],
-        'countries': countries, 'durations': [duration] if duration else [],
-        'episodes': None, 'short_comment': '', 'short_comment_author': '',
-        'hue': hue_of(sid),
-    }
+def build_rows(uid: str):
+    rows = {'books': [], 'movies': [], 'anime': [], 'music': [], 'games': []}
+
+    for it in fetch_interests(uid, 'movie'):
+        if it.get('status') != 'done':
+            continue
+        rating = (it.get('rating') or {}).get('value')
+        if rating not in (4, 5):
+            continue
+        s = it['subject']
+        sid = str(s.get('id'))
+        subtype = s.get('subtype') or ''
+        genres = [x for x in (s.get('genres') or []) if isinstance(x, str)]
+        kind = 'anime' if is_anime(s.get('title') or '', genres, subtype, sid) else 'movie'
+        row = {
+            'id': sid, 'kind': kind, 'title': s.get('title') or '',
+            'original_title': '', 'year': str(s.get('year') or year_of(s.get('card_subtitle'))),
+            'cover': s.get('cover_url') or '',
+            'douban_rating': (s.get('rating') or {}).get('value'),
+            'douban_votes': (s.get('rating') or {}).get('count'),
+            'my_rating': rating, 'intro': '', 'genres': genres,
+            'url': s.get('url') or f'https://movie.douban.com/subject/{sid}/',
+            'finished': date_of(it.get('create_time')), 'my_comment': it.get('comment') or '',
+            'directors': names(s.get('directors')), 'actors': names(s.get('actors')),
+            'countries': [], 'durations': [], 'episodes': None, 'subtype': subtype,
+            'hue': hue_of(sid),
+        }
+        rows['anime' if kind == 'anime' else 'movies'].append(row)
+
+    for it in fetch_interests(uid, 'book'):
+        if it.get('status') != 'done':
+            continue
+        rating = (it.get('rating') or {}).get('value')
+        if rating not in (4, 5):
+            continue
+        s = it['subject']
+        authors = s.get('author') or []
+        title = s.get('title') or ''
+        if any(a in WEB_NOVEL_AUTHORS for a in authors):
+            continue
+        if any(title.startswith(t) for t in WEB_NOVEL_TITLES):
+            continue
+        sid = str(s.get('id'))
+        rows['books'].append({
+            'id': sid, 'kind': 'book', 'title': title,
+            'original_title': s.get('book_subtitle') or '',
+            'year': year_of((s.get('pubdate') or [''])[0]), 'cover': s.get('cover_url') or '',
+            'douban_rating': (s.get('rating') or {}).get('value'),
+            'douban_votes': (s.get('rating') or {}).get('count'),
+            'my_rating': rating, 'intro': s.get('intro') or '', 'genres': [],
+            'url': s.get('url') or f'https://book.douban.com/subject/{sid}/',
+            'finished': date_of(it.get('create_time')), 'my_comment': it.get('comment') or '',
+            'authors': authors, 'publisher': (s.get('press') or [''])[0],
+            'pubdate': (s.get('pubdate') or [''])[0], 'pages': s.get('pages'),
+            'translator': [], 'hue': hue_of(sid),
+        })
+
+    for it in fetch_interests(uid, 'music'):
+        if it.get('status') != 'done':
+            continue
+        rating = (it.get('rating') or {}).get('value')
+        if rating != 5:
+            continue
+        s = it['subject']
+        sid = str(s.get('id'))
+        rows['music'].append({
+            'id': sid, 'kind': 'music', 'title': s.get('title') or '',
+            'original_title': '', 'year': year_of((s.get('pubdate') or [''])[0]),
+            'cover': s.get('cover_url') or '',
+            'douban_rating': (s.get('rating') or {}).get('value'),
+            'douban_votes': (s.get('rating') or {}).get('count'),
+            'my_rating': rating, 'intro': '',
+            'genres': [x for x in (s.get('genres') or []) if isinstance(x, str)],
+            'url': s.get('url') or f'https://music.douban.com/subject/{sid}/',
+            'finished': date_of(it.get('create_time')), 'my_comment': it.get('comment') or '',
+            'singers': names(s.get('singer')), 'publisher': [],
+            'pubdate': (s.get('pubdate') or [''])[0], 'media': '', 'hue': hue_of(sid),
+        })
+
+    for it in fetch_interests(uid, 'game'):
+        if it.get('status') != 'done':
+            continue
+        rating = (it.get('rating') or {}).get('value')
+        if rating not in (4, 5):
+            continue
+        s = it['subject']
+        sid = str(s.get('id'))
+        rows['games'].append({
+            'id': sid, 'kind': 'game', 'title': s.get('title') or '',
+            'original_title': '', 'year': year_of(s.get('release_date')),
+            'cover': s.get('cover_url') or '',
+            'douban_rating': (s.get('rating') or {}).get('value'),
+            'douban_votes': (s.get('rating') or {}).get('count'),
+            'my_rating': rating, 'intro': '',
+            'genres': [x for x in (s.get('genres') or []) if isinstance(x, str)],
+            'url': s.get('url') or f'https://www.douban.com/game/{sid}/',
+            'finished': date_of(it.get('create_time')), 'my_comment': it.get('comment') or '',
+            'platforms': names(s.get('platforms')), 'developers': [], 'publishers': [],
+            'release_date': s.get('release_date') or '', 'hue': hue_of(sid),
+        })
+    return rows
 
 
-def build_book(src: dict) -> dict:
-    sid = get_id(src['href'])
-    mob = parse_mobile('book', sid)
-    meta = mob.get('sub_meta') or src.get('pub', '')
-    parts = [p.strip() for p in meta.split(' / ') if p.strip()]
-    authors = [x.strip() for x in parts[0].split('/') if x.strip()] if parts else []
-    publisher = parts[1] if len(parts) > 1 else ''
-    pubdate = re.sub(r'出版$', '', parts[2]).strip() if len(parts) > 2 else ''
-    return {
-        'id': sid, 'kind': 'book',
-        'title': mob.get('title') or (src.get('title') or '').split(' / ')[0].strip(),
-        'original_title': mob.get('original', ''),
-        'year': year_of(pubdate) or year_of(src.get('pub', '')),
-        'cover': mob.get('og_image') or src.get('cover', ''),
-        'douban_rating': None, 'douban_votes': None,
-        'intro': mob.get('intro', ''), 'genres': [],
-        'url': src['href'], 'finished': src.get('date', ''), 'my_comment': src.get('comment', ''),
-        'authors': authors, 'publisher': publisher, 'pubdate': pubdate,
-        'pages': None, 'translator': [], 'hue': hue_of(sid),
-    }
+def enrich(rows):
+    """详情只取书籍 / 音乐 / 游戏；电影详情接口限流严重，用条目自带元数据。"""
+    jobs = [row for group in rows.values() for row in group if row['kind'] in ('book', 'music', 'game')]
+    print('details to fetch', len(jobs), flush=True)
+    for i, row in enumerate(jobs, 1):
+        d = fetch_detail(row['kind'], row['id'])
+        if d:
+            row['cover'] = d.get('cover_url') or row['cover']
+            row['intro'] = (d.get('intro') or row['intro'] or '').strip()
+            if d.get('rating'):
+                row['douban_rating'] = d['rating'].get('value', row['douban_rating'])
+                row['douban_votes'] = d['rating'].get('count', row['douban_votes'])
+            if row['kind'] == 'book':
+                row['authors'] = d.get('author') or row['authors']
+                row['publisher'] = (d.get('press') or [row['publisher']])[0]
+                row['pubdate'] = (d.get('pubdate') or [row['pubdate']])[0]
+                row['pages'] = d.get('pages') or row['pages']
+                row['translator'] = d.get('translator') or row['translator']
+            elif row['kind'] == 'music':
+                row['singers'] = names(d.get('singer')) or row['singers']
+                row['publisher'] = d.get('publisher') or row['publisher']
+                row['pubdate'] = (d.get('pubdate') or [row['pubdate']])[0]
+                row['media'] = d.get('media') or row['media']
+                row['genres'] = d.get('genres') or row['genres']
+            elif row['kind'] == 'game':
+                row['platforms'] = names(d.get('platforms')) or row['platforms']
+                row['developers'] = names(d.get('developers')) or row['developers']
+                row['publishers'] = names(d.get('publishers')) or row['publishers']
+                row['release_date'] = d.get('release_date') or row['release_date']
+                row['genres'] = d.get('genres') or row['genres']
+        if i % 25 == 0:
+            print('detail', i, flush=True)
+    return rows
 
 
-def build_music(src: dict) -> dict:
-    sid = get_id(src['href'])
-    mob = parse_mobile('music', sid)
-    parts = [p.strip() for p in src.get('intro', '').split(' / ') if p.strip()]
-    singers = [parts[0]] if parts else []
-    pubdate = parts[1] if len(parts) > 1 else ''
-    media = parts[3] if len(parts) > 3 and parts[3] in ('CD', '黑胶', '数字', '磁带') else (parts[2] if len(parts) > 2 else '')
-    genres = [parts[-1]] if parts and parts[-1] in GENRES else []
-    return {
-        'id': sid, 'kind': 'music',
-        'title': mob.get('title') or (src.get('title') or '').split(' / ')[0].strip(),
-        'original_title': mob.get('original', ''),
-        'year': year_of(pubdate) or year_of(src.get('intro', '')),
-        'cover': mob.get('og_image') or src.get('cover', ''),
-        'douban_rating': None, 'douban_votes': None,
-        'intro': mob.get('intro', ''), 'genres': genres,
-        'url': src['href'], 'finished': src.get('date', ''), 'my_comment': src.get('comment', ''),
-        'singers': singers, 'publisher': [], 'pubdate': pubdate, 'media': media,
-        'hue': hue_of(sid),
-    }
+def fallback_intro(row):
+    if row.get('intro'):
+        return row['intro']
+    kind = row.get('kind')
+    bits = []
+    if kind in ('movie', 'anime'):
+        label = '动画剧集' if row.get('subtype') == 'tv' else ('动画电影' if kind == 'anime' else '电影')
+        bits.append(f"{row.get('year') or '未知年份'} 年{label}")
+        if row.get('countries'):
+            bits.append(' / '.join(row['countries']))
+        if row.get('directors'):
+            bits.append('导演：' + ' / '.join(row['directors']))
+        if row.get('episodes'):
+            bits.append(f"{row['episodes']} 集")
+        elif row.get('durations'):
+            bits.append(' / '.join(row['durations']))
+        if row.get('genres'):
+            bits.append('类型：' + ' / '.join(row['genres']))
+    elif kind == 'music':
+        bits.append(' / '.join(row.get('singers') or []) or '音乐')
+        if row.get('pubdate'):
+            bits.append(row['pubdate'])
+        if row.get('genres'):
+            bits.append(' / '.join(row['genres']))
+    elif kind == 'game':
+        bits.append(f"{row.get('year') or '未知年份'} 年游戏")
+        if row.get('platforms'):
+            bits.append('平台：' + ' / '.join(row['platforms']))
+        if row.get('genres'):
+            bits.append('类型：' + ' / '.join(row['genres']))
+    return '，'.join([b for b in bits if b]) + '。' if bits else ''
 
 
-# ---------- 封面 ----------
-
-def fetch_cover(kind: str, sid: str, url: str) -> str:
-    fn = COVER_DIR / f'{kind}-{sid}.webp'
+def fetch_cover(row):
+    fn = COVER_DIR / f"{row['kind']}-{row['id']}.webp"
     if fn.exists() and fn.stat().st_size > 1000:
-        return f'wuyu/covers/{kind}-{sid}.webp'
+        row['cover'] = f"wuyu/covers/{row['kind']}-{row['id']}.webp"
+        return True
+    url = row.get('cover') or ''
     if not url:
-        return ''
-    ref = {'book': 'https://book.douban.com/', 'music': 'https://music.douban.com/'}.get(kind, 'https://movie.douban.com/')
+        return False
+    ref = {'book': 'https://book.douban.com/', 'music': 'https://music.douban.com/'}.get(row['kind'], 'https://movie.douban.com/')
     headers = {'User-Agent': UA_DESKTOP, 'Referer': ref}
     candidates = [url]
     for host in ('img1', 'img2', 'img3', 'img9'):
         for old in ('img1', 'img2', 'img3', 'img9'):
             candidates.append(url.replace(f'//{old}.doubanio.com', f'//{host}.doubanio.com'))
-    for candidate in candidates:
+    for cand in candidates:
         try:
-            r = requests.get(candidate, headers=headers, timeout=30)
-            if r.status_code != 200 or len(r.content) < 2000:
-                continue
-            img = Image.open(io.BytesIO(r.content)).convert('RGB')
-            w, h = img.size
-            if w > 360:
-                img = img.resize((360, int(h * 360 / w)), Image.LANCZOS)
-            fn.parent.mkdir(parents=True, exist_ok=True)
-            img.save(fn, 'WEBP', quality=84, method=6)
-            return f'wuyu/covers/{kind}-{sid}.webp'
+            r = requests.get(cand, headers=headers, timeout=30)
+            if r.status_code == 200 and len(r.content) > 2000:
+                img = Image.open(io.BytesIO(r.content)).convert('RGB')
+                w, h = img.size
+                if w > 360:
+                    img = img.resize((360, int(h * 360 / w)), Image.LANCZOS)
+                fn.parent.mkdir(parents=True, exist_ok=True)
+                img.save(fn, 'WEBP', quality=84, method=6)
+                row['cover'] = f"wuyu/covers/{row['kind']}-{row['id']}.webp"
+                return True
         except Exception:
             continue
-    return ''
+    return False
 
 
-# ---------- 主流程 ----------
-
-def main() -> None:
+def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--user', default='bxycode000')
+    parser.add_argument('--uid', default=UID)
     args = parser.parse_args()
 
-    print('抓取电影收藏 ...')
-    movies = scrape_movies(args.user)
-    print('抓取书籍收藏 ...')
-    books = scrape_subjects(args.user, 'book')
-    print('抓取音乐收藏 ...')
-    music = scrape_subjects(args.user, 'music')
-    print(f'收藏页：电影 {len(movies)} / 书籍 {len(books)} / 音乐 {len(music)}')
+    rows = build_rows(args.uid)
+    print({k: len(v) for k, v in rows.items()}, flush=True)
+    rows = enrich(rows)
+    for group in rows:
+        for row in rows[group]:
+            row['intro'] = fallback_intro(row)
+        rows[group].sort(key=lambda r: r.get('finished') or '0000-00-00', reverse=True)
 
-    movie_rows = [build_movie(x) for x in movies]
-    book_rows = [build_book(x) for x in books]
-    music_rows = [build_music(x) for x in music]
-
-    anime_rows, film_rows = [], []
-    for row in movie_rows:
-        if '动画' in (row.get('genres') or []):
-            row['kind'] = 'anime'
-            anime_rows.append(row)
-        else:
-            film_rows.append(row)
-
-    for rows in (film_rows, anime_rows, book_rows, music_rows):
-        rows.sort(key=lambda r: date_of(r.get('finished', '')) or '0000-00-00', reverse=True)
+    jobs = [row for group in rows.values() for row in group]
+    print('covers', len(jobs), flush=True)
+    ok = 0
+    for i, row in enumerate(jobs, 1):
+        if fetch_cover(row):
+            ok += 1
+        if i % 100 == 0:
+            print('cover', i, 'ok', ok, flush=True)
 
     data = {
         'generatedAt': time.strftime('%Y-%m-%d'),
-        'source': f'https://www.douban.com/people/{args.user}/',
-        'books': book_rows,
-        'movies': film_rows,
-        'anime': anime_rows,
-        'music': music_rows,
+        'source': 'https://www.douban.com/people/bxycode000/',
+        'books': rows['books'],
+        'movies': rows['movies'],
+        'anime': rows['anime'],
+        'music': rows['music'],
+        'games': rows['games'],
     }
-
-    # 如果本轮详情页抓取失败，用上一次的富数据补齐，避免把已有简介/评分冲掉
-    if DATA_FILE.exists():
-        try:
-            old = json.loads(DATA_FILE.read_text(encoding='utf-8'))
-            old_map = {(it.get('kind'), it.get('id')): it
-                       for key in ('books', 'movies', 'anime', 'music') for it in old.get(key, [])}
-            fill_keys = ('intro', 'original_title', 'douban_rating', 'douban_votes', 'genres',
-                         'directors', 'actors', 'countries', 'durations', 'episodes',
-                         'short_comment', 'short_comment_author', 'authors', 'publisher',
-                         'pubdate', 'pages', 'translator', 'singers', 'media')
-            for group in ('books', 'movies', 'anime', 'music'):
-                for row in data[group]:
-                    prev = old_map.get((row.get('kind'), row.get('id')))
-                    if not prev:
-                        continue
-                    for key in fill_keys:
-                        if not row.get(key) and prev.get(key):
-                            row[key] = prev[key]
-        except Exception:
-            pass
-
-    # 下载封面；已存在的本地封面不重复下载
-    for group in ('books', 'movies', 'anime', 'music'):
-        for row in data[group]:
-            path = fetch_cover(row['kind'], row['id'], row.get('cover', ''))
-            if path:
-                row['cover'] = path
-            print('.', end='', flush=True)
-    print()
-
     DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
     DATA_FILE.write_text(json.dumps(data, ensure_ascii=False, indent=1), encoding='utf-8')
-    print(f'写入 {DATA_FILE}')
-    print(f'书籍 {len(book_rows)} · 电影 {len(film_rows)} · 漫剧 {len(anime_rows)} · 音乐 {len(music_rows)}')
+    print('wrote', DATA_FILE)
+    print({k: len(v) for k, v in rows.items()})
 
 
 if __name__ == '__main__':

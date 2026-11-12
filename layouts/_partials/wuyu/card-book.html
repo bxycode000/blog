@@ -12,7 +12,7 @@
     </span>
     <span class="wuyu-caption">
         <strong>{{ $item.title }}</strong>
-        <em>{{ $authors }}{{ with $item.year }} · {{ . }}{{ end }}</em>
+        <em>{{ $authors }}{{ with $item.year }} · {{ . }}{{ end }}{{ with $item.my_rating }} · {{ . }} 星{{ end }}</em>
     </span>
 </button>
 <template id="wuyu-{{ $item.kind }}-{{ $item.id }}">
