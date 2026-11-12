@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" class="icon icon-tabler icon-tabler-wuyu" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <path stroke="none" d="M0 0h24v24H0z"/>
+  <path d="M5 4h4a2 2 0 0 1 2 2v12a2 2 0 0 0 -2 -2h-4z" />
+  <path d="M19 4h-4a2 2 0 0 0 -2 2v12a2 2 0 0 1 2 -2h4z" />
+  <path d="M12 8v8" />
+  <path d="M12 2l.6 1.6 1.6 .4 -1.6 .4 -.6 1.6 -.6 -1.6 -1.6 -.4 1.6 -.4z" fill="currentColor" stroke="none" />
+</svg>

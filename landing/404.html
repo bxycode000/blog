@@ -9,7 +9,7 @@
 <script>
 (function(){
   var p = location.pathname;
-  var prefixes = ['/p/','/post/','/tags/','/categories/','/archives/','/search/','/reading/','/page/'];
+  var prefixes = ['/p/','/post/','/tags/','/categories/','/archives/','/search/','/reading/','/wuyu/','/page/'];
   for (var i=0;i<prefixes.length;i++){
     if (p.indexOf(prefixes[i]) === 0) { location.replace('/blog' + p + location.search + location.hash); return; }
   }

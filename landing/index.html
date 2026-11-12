@@ -28,6 +28,7 @@
       <div class="topbar">
         <a class="back-link" href="/blog/">← cd /blog</a>
         <div class="topbar-right">
+          <a href="/blog/wuyu/" data-zh="物语" data-en="Stories">物语</a>
           <a href="/blog/portfolio/" data-zh="CV" data-en="CV">CV</a>
           <a href="/blog/archives/" data-zh="归档" data-en="Archive">归档</a>
           <button class="lang-btn" id="lang-toggle" type="button" aria-label="Switch language">EN</button>
@@ -145,11 +146,11 @@
   var prompt = document.getElementById('prompt');
   var HELP_ZH = [
     '/help      显示这份帮助', '/about     跳到「关于我」', '/hobbies   爱好', '/contact   联系方式',
-    '/cv        打开在线 CV', '/blog      进入博客', '/zh /en    切换中英文', '/clear     清空输出'
+    '/cv        打开在线 CV', '/wuyu      打开物语', '/blog      进入博客', '/zh /en    切换中英文', '/clear     清空输出'
   ];
   var HELP_EN = [
     '/help      show this help', '/about     jump to About Me', '/hobbies   hobbies', '/contact   contact links',
-    '/cv        open my online CV', '/blog      go to the blog', '/zh /en    switch language', '/clear     clear output'
+    '/cv        open my online CV', '/wuyu      open Stories', '/blog      go to the blog', '/zh /en    switch language', '/clear     clear output'
   ];
   function print(text, cls) {
     var p = document.createElement('p'); if (cls) p.className = cls;
@@ -169,12 +170,13 @@
       case '/hobbies': scrollToId('#hobbies'); break;
       case '/contact': scrollToId('#contact'); break;
       case '/cv': window.location.href = '/blog/portfolio/'; break;
+      case '/wuyu': window.location.href = '/blog/wuyu/'; break;
       case '/blog': window.location.href = '/blog/'; break;
       case '/zh': applyLanguage('zh'); print('language = zh-CN'); break;
       case '/en': applyLanguage('en'); print('language = en'); break;
       case '/clear': output.innerHTML = ''; break;
       case 'whoami': print(isZh ? 'Lyi（Ethan / Verdiluxen）— 跨境电商运营 / 产品与数据' : 'Lyi (Ethan / Verdiluxen) — cross-border e-commerce / product & data'); break;
-      case 'ls': print('about  hobbies  contact  cv  blog'); break;
+      case 'ls': print('about  hobbies  contact  cv  wuyu  blog'); break;
       default: print('command not found: ' + cmd + (isZh ? ' —— 试试 /help' : ' — try /help'), 'cmd-error');
     }
   }

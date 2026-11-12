@@ -1,0 +1,29 @@
+{{- $item := . -}}
+{{- $cover := $item.cover | default "" -}}
+{{- $directors := delimit ($item.directors | default slice) " / " -}}
+{{- $chips := first 3 ($item.genres | default slice) -}}
+{{- $blurb := $item.my_comment -}}
+{{- if not $blurb }}{{ $blurb = $item.intro | default "" | truncate 120 }}{{ end -}}
+<button class="wuyu-card wuyu-card--anime" type="button" data-wuyu-open="wuyu-{{ $item.kind }}-{{ $item.id }}" data-search="{{ $item.title }} {{ $item.original_title }} {{ $directors }} {{ $item.year }} {{ delimit ($item.genres | default slice) " " }}" style="--hue:{{ $item.hue | default 160 }}" aria-label="查看《{{ $item.title }}》详情">
+    <span class="wuyu-anime__cover">
+        <span class="wuyu-cover">
+            <span class="wuyu-cover__fallback"><b>{{ $item.title }}</b><em>{{ $item.year }}</em></span>
+            {{- with $cover }}<img src="{{ . | relURL }}" alt="{{ $item.title }} 封面" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.style.display='none'">{{ end }}
+        </span>
+    </span>
+    <span class="wuyu-anime__body">
+        {{- if $chips }}
+        <span class="wuyu-chips">{{ range $chips }}<span>{{ . }}</span>{{ end }}</span>
+        {{- end }}
+        <strong class="wuyu-anime__title">{{ $item.title }}</strong>
+        {{- with $item.original_title }}<span class="wuyu-anime__original">{{ . }}</span>{{ end }}
+        {{- with $blurb }}<span class="wuyu-anime__comment">{{ . }}</span>{{ end }}
+        <span class="wuyu-anime__footer">
+            <span>{{ with $item.year }}{{ . }}{{ end }}{{ with $item.episodes }} · {{ . }} 集{{ end }}</span>
+            <span>看过 · 五星</span>
+        </span>
+    </span>
+</button>
+<template id="wuyu-{{ $item.kind }}-{{ $item.id }}">
+    {{ partial "wuyu/detail-anime" $item }}
+</template>

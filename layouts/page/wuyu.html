@@ -1,0 +1,120 @@
+{{ define "body-class" }}wuyu-page{{ end }}
+{{ define "main" }}
+{{- $data := site.Data.wuyu | default dict -}}
+{{- $books := $data.books | default slice -}}
+{{- $movies := $data.movies | default slice -}}
+{{- $anime := $data.anime | default slice -}}
+{{- $music := $data.music | default slice -}}
+<div class="wuyu-wrap">
+    <header class="wuyu-hero">
+        <p class="wuyu-kicker">MONOGATARI · 物语</p>
+        <h1 class="wuyu-title">{{ .Title }}</h1>
+        <p class="wuyu-intro">{{ with .Description }}{{ . }}{{ else }}书籍、音乐、电影与漫剧。这里只收录看完并给出五星的那些——不是待看清单，是已经住进记忆里的作品。{{ end }}</p>
+        <span class="wuyu-rule" aria-hidden="true"></span>
+        <p class="wuyu-meta-line">
+            <span><b>{{ len $books }}</b> 本书</span>
+            <span><b>{{ len $movies }}</b> 部电影</span>
+            <span><b>{{ len $anime }}</b> 部漫剧</span>
+            <span><b>{{ len $music }}</b> 张唱片</span>
+            {{- with $data.generatedAt }}<span>数据更新于 {{ . }}</span>{{ end }}
+        </p>
+    </header>
+
+    <nav class="wuyu-tabs" role="tablist" aria-label="物语分类">
+        <button class="wuyu-tab wuyu-tab--books" type="button" role="tab" id="wuyu-tab-books" aria-controls="wuyu-panel-books" aria-selected="true" tabindex="0" data-wuyu-tab="books">
+            <span class="wuyu-tab__en">Books</span>
+            <span class="wuyu-tab__name">书籍</span>
+            <span class="wuyu-tab__count">{{ printf "%02d" (len $books) }}</span>
+        </button>
+        <button class="wuyu-tab wuyu-tab--movies" type="button" role="tab" id="wuyu-tab-movies" aria-controls="wuyu-panel-movies" aria-selected="false" tabindex="-1" data-wuyu-tab="movies">
+            <span class="wuyu-tab__en">Films</span>
+            <span class="wuyu-tab__name">电影</span>
+            <span class="wuyu-tab__count">{{ printf "%02d" (len $movies) }}</span>
+        </button>
+        <button class="wuyu-tab wuyu-tab--anime" type="button" role="tab" id="wuyu-tab-anime" aria-controls="wuyu-panel-anime" aria-selected="false" tabindex="-1" data-wuyu-tab="anime">
+            <span class="wuyu-tab__en">Anime</span>
+            <span class="wuyu-tab__name">漫剧</span>
+            <span class="wuyu-tab__count">{{ printf "%02d" (len $anime) }}</span>
+        </button>
+        <button class="wuyu-tab wuyu-tab--music" type="button" role="tab" id="wuyu-tab-music" aria-controls="wuyu-panel-music" aria-selected="false" tabindex="-1" data-wuyu-tab="music">
+            <span class="wuyu-tab__en">Music</span>
+            <span class="wuyu-tab__name">音乐</span>
+            <span class="wuyu-tab__count">{{ printf "%02d" (len $music) }}</span>
+        </button>
+    </nav>
+
+    <section class="wuyu-panel wuyu-panel--books" role="tabpanel" id="wuyu-panel-books" aria-labelledby="wuyu-tab-books">
+        <header class="wuyu-panel__head">
+            <h2 class="wuyu-panel__title"><span class="wuyu-panel__dot" aria-hidden="true"></span>书架</h2>
+            <span class="wuyu-panel__count">共 {{ len $books }} 本</span>
+            <div class="wuyu-toolbar">
+                <label class="wuyu-search">
+                    {{ partial "helper/icon" "search" }}
+                    <input type="search" data-wuyu-search placeholder="搜索书名 / 作者" aria-label="搜索书籍">
+                </label>
+            </div>
+        </header>
+        <div class="wuyu-grid wuyu-grid--books" data-wuyu-grid>
+            {{- range $books }}{{ partial "wuyu/card-book" . }}{{ end }}
+        </div>
+        <div class="wuyu-empty-filter" data-wuyu-empty>没有找到匹配的书，换个关键词试试。</div>
+    </section>
+
+    <section class="wuyu-panel wuyu-panel--movies" role="tabpanel" id="wuyu-panel-movies" aria-labelledby="wuyu-tab-movies" hidden>
+        <header class="wuyu-panel__head">
+            <h2 class="wuyu-panel__title"><span class="wuyu-panel__dot" aria-hidden="true"></span>放映厅</h2>
+            <span class="wuyu-panel__count">共 {{ len $movies }} 部</span>
+            <div class="wuyu-toolbar">
+                <label class="wuyu-search">
+                    {{ partial "helper/icon" "search" }}
+                    <input type="search" data-wuyu-search placeholder="搜索片名 / 导演" aria-label="搜索电影">
+                </label>
+            </div>
+        </header>
+        <div class="wuyu-grid wuyu-grid--movies" data-wuyu-grid>
+            {{- range $movies }}{{ partial "wuyu/card-movie" . }}{{ end }}
+        </div>
+        <div class="wuyu-empty-filter" data-wuyu-empty>没有找到匹配的电影，换个关键词试试。</div>
+    </section>
+
+    <section class="wuyu-panel wuyu-panel--anime" role="tabpanel" id="wuyu-panel-anime" aria-labelledby="wuyu-tab-anime" hidden>
+        <header class="wuyu-panel__head">
+            <h2 class="wuyu-panel__title"><span class="wuyu-panel__dot" aria-hidden="true"></span>漫剧</h2>
+            <span class="wuyu-panel__count">共 {{ len $anime }} 部</span>
+            <div class="wuyu-toolbar">
+                <label class="wuyu-search">
+                    {{ partial "helper/icon" "search" }}
+                    <input type="search" data-wuyu-search placeholder="搜索剧名 / 类型" aria-label="搜索漫剧">
+                </label>
+            </div>
+        </header>
+        <div class="wuyu-grid wuyu-grid--anime" data-wuyu-grid>
+            {{- range $anime }}{{ partial "wuyu/card-anime" . }}{{ end }}
+        </div>
+        <div class="wuyu-empty-filter" data-wuyu-empty>没有找到匹配的漫剧，换个关键词试试。</div>
+    </section>
+
+    <section class="wuyu-panel wuyu-panel--music" role="tabpanel" id="wuyu-panel-music" aria-labelledby="wuyu-tab-music" hidden>
+        <header class="wuyu-panel__head">
+            <h2 class="wuyu-panel__title"><span class="wuyu-panel__dot" aria-hidden="true"></span>曲目单</h2>
+            <span class="wuyu-panel__count">共 {{ len $music }} 张</span>
+            <div class="wuyu-toolbar">
+                <label class="wuyu-search">
+                    {{ partial "helper/icon" "search" }}
+                    <input type="search" data-wuyu-search placeholder="搜索专辑 / 歌手" aria-label="搜索音乐">
+                </label>
+            </div>
+        </header>
+        <div class="wuyu-grid wuyu-grid--music" data-wuyu-grid>
+            {{- range $music }}{{ partial "wuyu/card-music" . }}{{ end }}
+        </div>
+        <div class="wuyu-empty-filter" data-wuyu-empty>没有找到匹配的唱片，换个关键词试试。</div>
+    </section>
+
+    <p class="wuyu-note">
+        数据来自 <a href="https://www.douban.com/people/bxycode000/" target="_blank" rel="noopener noreferrer">豆瓣</a> · 仅收录「看过 / 读过 / 听过」且评价为五星的记录{{ with $data.generatedAt }} · 更新于 {{ . }}{{ end }}
+    </p>
+</div>
+
+{{ partial "wuyu/scripts" . }}
+{{ end }}

@@ -1,0 +1,1291 @@
+/* =========================================================
+   物语 /wuyu/ —— 书籍 · 电影 · 漫剧 · 音乐
+   参考 Gargantua'Blog /recommendations/ 的分类橱窗语言，
+   按本站「暖纸编辑风」重绘：纸张、衬线、细线、暖色点缀。
+   ========================================================= */
+
+body.wuyu-page {
+    --wuyu-books: #8a5a2b;
+    --wuyu-movies: #a34838;
+    --wuyu-anime: #3d7a6a;
+    --wuyu-music: #6c5a8e;
+    --wuyu-glow: rgba(138, 90, 43, .055);
+    background-image: radial-gradient(860px 420px at 66% -140px, var(--wuyu-glow), transparent 72%);
+    background-repeat: no-repeat;
+}
+
+:root[data-scheme="dark"] body.wuyu-page {
+    --wuyu-books: #d9ae79;
+    --wuyu-movies: #e08f7a;
+    --wuyu-anime: #7fc4b2;
+    --wuyu-music: #b4a1e0;
+    --wuyu-glow: rgba(217, 174, 121, .06);
+}
+
+.wuyu-wrap {
+    --wuyu-tint: rgba(138, 90, 43, .08);
+    --wuyu-tint-strong: rgba(138, 90, 43, .16);
+    --wuyu-shadow: rgba(36, 31, 24, .10);
+    --wuyu-shadow-soft: rgba(36, 31, 24, .05);
+    --wuyu-line: var(--card-separator-color);
+
+    width: 100%;
+    max-width: 1080px;
+    display: flex;
+    flex-direction: column;
+    gap: 34px;
+}
+
+:root[data-scheme="dark"] .wuyu-wrap {
+    --wuyu-tint: rgba(217, 174, 121, .09);
+    --wuyu-tint-strong: rgba(217, 174, 121, .20);
+    --wuyu-shadow: rgba(0, 0, 0, .48);
+    --wuyu-shadow-soft: rgba(0, 0, 0, .30);
+}
+
+/* ---------- 页头 ---------- */
+.wuyu-hero {
+    padding: 8px 0 0;
+}
+
+.wuyu-kicker {
+    margin: 0 0 12px;
+    font: 600 1.05rem/1.4 var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    color: var(--accent-color);
+}
+
+.wuyu-title {
+    margin: 0 0 14px;
+    font-family: var(--serif-font-family);
+    font-size: 3.8rem;
+    font-weight: 600;
+    line-height: 1.28;
+    letter-spacing: .01em;
+    color: var(--card-text-color-main);
+}
+
+.wuyu-intro {
+    max-width: 44em;
+    margin: 0;
+    font-size: 1.5rem;
+    line-height: 1.9;
+    color: var(--body-text-color);
+}
+
+.wuyu-rule {
+    display: block;
+    width: 56px;
+    height: 2px;
+    margin-top: 24px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--accent-color), transparent);
+    opacity: .65;
+}
+
+.wuyu-meta-line {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    margin-top: 18px;
+    font: 500 1.05rem/1.6 var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    letter-spacing: .06em;
+    color: var(--card-text-color-tertiary);
+}
+
+.wuyu-meta-line b {
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
+/* ---------- 分类 tabs ---------- */
+.wuyu-tabs {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: .75rem;
+}
+
+.wuyu-tab {
+    --accent: var(--wuyu-books);
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+        "en count"
+        "name count";
+    align-items: center;
+    padding: .9rem 1.05rem .95rem;
+    overflow: hidden;
+    color: var(--card-text-color-secondary);
+    font: inherit;
+    text-align: left;
+    border: 1px solid var(--card-separator-color);
+    border-radius: 14px;
+    background: var(--card-background);
+    cursor: pointer;
+    transition: color .25s ease, border-color .25s ease, background-color .25s ease, transform .25s ease, box-shadow .25s ease;
+}
+
+.wuyu-tab--movies { --accent: var(--wuyu-movies); }
+.wuyu-tab--anime  { --accent: var(--wuyu-anime); }
+.wuyu-tab--music  { --accent: var(--wuyu-music); }
+
+.wuyu-tab::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform .3s ease;
+}
+
+.wuyu-tab:hover {
+    color: var(--card-text-color-main);
+    border-color: color-mix(in srgb, var(--accent) 40%, var(--card-separator-color));
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px -18px var(--wuyu-shadow);
+}
+
+.wuyu-tab:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+}
+
+.wuyu-tab[aria-selected="true"] {
+    color: var(--card-text-color-main);
+    border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+    background: color-mix(in srgb, var(--accent) 7%, var(--card-background));
+}
+
+.wuyu-tab[aria-selected="true"]::after {
+    transform: scaleX(1);
+}
+
+.wuyu-tab__en {
+    grid-area: en;
+    font-size: .66rem;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--card-text-color-tertiary);
+}
+
+.wuyu-tab[aria-selected="true"] .wuyu-tab__en {
+    color: var(--accent);
+}
+
+.wuyu-tab__name {
+    grid-area: name;
+    font-family: var(--serif-font-family);
+    font-size: 1.4rem;
+    font-weight: 600;
+    letter-spacing: .08em;
+    line-height: 1.4;
+}
+
+.wuyu-tab__count {
+    grid-area: count;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.7rem;
+    line-height: 1;
+    opacity: .32;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------- 面板 ---------- */
+.wuyu-panel {
+    animation: wuyu-fade-in .4s ease both;
+}
+
+.wuyu-panel[hidden] {
+    display: none !important;
+}
+
+@keyframes wuyu-fade-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: none; }
+}
+
+.wuyu-panel__head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: .55rem 1.2rem;
+    margin-bottom: 1.6rem;
+    padding-bottom: .85rem;
+    border-bottom: 1px solid var(--card-separator-color);
+}
+
+.wuyu-panel__title {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+    font-family: var(--serif-font-family);
+    font-size: 2rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--card-text-color-main);
+}
+
+.wuyu-panel__dot {
+    width: 7px;
+    height: 7px;
+    flex: none;
+    border-radius: 50%;
+    background: var(--panel-accent, var(--accent-color));
+    box-shadow: 0 0 0 3px var(--wuyu-tint);
+}
+
+.wuyu-panel--books { --panel-accent: var(--wuyu-books); }
+.wuyu-panel--movies { --panel-accent: var(--wuyu-movies); }
+.wuyu-panel--anime { --panel-accent: var(--wuyu-anime); }
+.wuyu-panel--music { --panel-accent: var(--wuyu-music); }
+
+.wuyu-panel__count {
+    font: 500 1.02rem/1.4 var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--card-text-color-tertiary);
+    white-space: nowrap;
+}
+
+.wuyu-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+}
+
+.wuyu-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.wuyu-search svg {
+    position: absolute;
+    left: 10px;
+    width: 14px;
+    height: 14px;
+    pointer-events: none;
+    color: var(--card-text-color-tertiary);
+}
+
+.wuyu-search input {
+    width: 190px;
+    height: 32px;
+    padding: 0 10px 0 30px;
+    border: 1px solid var(--card-separator-color);
+    border-radius: 999px;
+    background: var(--card-background);
+    color: var(--card-text-color-main);
+    font-size: 1.15rem;
+    outline: none;
+    transition: border-color .15s ease, width .2s ease, box-shadow .15s ease;
+}
+
+.wuyu-search input::placeholder {
+    color: var(--card-text-color-tertiary);
+}
+
+.wuyu-search input:focus {
+    width: 230px;
+    border-color: var(--panel-accent, var(--accent-color));
+    box-shadow: 0 0 0 3px var(--wuyu-tint);
+}
+
+.wuyu-empty-filter {
+    display: none;
+    padding: 2.2rem 1rem;
+    color: var(--card-text-color-tertiary);
+    text-align: center;
+    border: 1px dashed var(--card-separator-color);
+    border-radius: 16px;
+}
+
+.wuyu-empty-filter.is-visible {
+    display: block;
+}
+
+/* ---------- 通用封面 ---------- */
+.wuyu-cover {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: inherit;
+    background: #20252c;
+}
+
+.wuyu-cover img {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.wuyu-cover__fallback {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: .35em;
+    padding: 12% 11%;
+    color: #f7efe0;
+    font-family: var(--serif-font-family);
+    font-size: 13px;
+    line-height: 1.35;
+    text-align: left;
+    background:
+        radial-gradient(120% 80% at 75% 15%, rgba(255, 255, 255, .18), transparent 60%),
+        linear-gradient(160deg, #5d4632, #2a2119);
+    filter: hue-rotate(calc(var(--hue, 30) * 1deg));
+}
+
+.wuyu-cover__fallback b {
+    font-size: 1.2em;
+    font-weight: 600;
+    word-break: break-word;
+}
+
+.wuyu-cover__fallback em {
+    font-size: .78em;
+    font-style: normal;
+    opacity: .78;
+}
+
+/* ---------- 书籍：书架上的 3D 书 ---------- */
+.wuyu-grid--books {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(132px, 1fr));
+    gap: 2.6rem 1.75rem;
+    padding: 0 1.25rem;
+}
+
+.wuyu-card {
+    display: block;
+    min-width: 0;
+    padding: 0;
+    color: inherit;
+    font: inherit;
+    text-align: left;
+    border: 0;
+    background: none;
+    cursor: pointer;
+}
+
+.wuyu-card:focus-visible {
+    outline: 2px solid var(--panel-accent, var(--accent-color));
+    outline-offset: 6px;
+    border-radius: 6px;
+}
+
+/* hidden 属性要压过 display:block，否则搜索过滤不生效 */
+.wuyu-card[hidden] {
+    display: none !important;
+}
+
+.wuyu-card--books {
+    --panel-accent: var(--wuyu-books);
+}
+
+.wuyu-book {
+    position: relative;
+    display: block;
+    padding: 0 10% 12px;
+    perspective: 900px;
+}
+
+.wuyu-book::after {
+    content: "";
+    position: absolute;
+    right: -0.9rem;
+    bottom: 0;
+    left: -0.9rem;
+    height: 12px;
+    border-radius: 2px;
+    background: linear-gradient(180deg, #d9c4a2, #b79670 70%, #9b7a55);
+    box-shadow: 0 10px 14px -8px rgba(60, 40, 20, .55);
+}
+
+:root[data-scheme="dark"] .wuyu-book::after {
+    background: linear-gradient(180deg, #5a4836, #45372a 70%, #382c21);
+    box-shadow: 0 10px 14px -8px rgba(0, 0, 0, .7);
+}
+
+.wuyu-book__object {
+    position: relative;
+    display: block;
+    aspect-ratio: 2 / 3;
+    transform-origin: left center;
+    transform-style: preserve-3d;
+    transition: transform .5s cubic-bezier(.2, .8, .2, 1);
+}
+
+.wuyu-book__object .wuyu-cover {
+    border-radius: 2px 5px 5px 2px;
+    box-shadow:
+        inset 6px 0 8px -4px rgba(0, 0, 0, .45),
+        inset 9px 0 0 -8px rgba(255, 255, 255, .35),
+        0 16px 20px -12px rgba(0, 0, 0, .55);
+}
+
+.wuyu-book__object::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    right: -5px;
+    bottom: 3px;
+    z-index: -1;
+    width: 6px;
+    border-radius: 0 3px 3px 0;
+    background: repeating-linear-gradient(90deg, #fbf7ee 0 1px, #ddd3c0 1px 2px);
+}
+
+.wuyu-card--books:hover .wuyu-book__object,
+.wuyu-card--books:focus-visible .wuyu-book__object {
+    transform: translateY(-8px) rotateY(-16deg);
+}
+
+.wuyu-card--books .wuyu-caption {
+    text-align: center;
+}
+
+.wuyu-caption {
+    display: grid;
+    gap: .18rem;
+    padding-top: .75rem;
+}
+
+.wuyu-caption strong {
+    overflow: hidden;
+    color: var(--card-text-color-main);
+    font-size: 1.15rem;
+    font-weight: 600;
+    line-height: 1.45;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wuyu-caption em {
+    overflow: hidden;
+    color: var(--card-text-color-tertiary);
+    font-size: 1rem;
+    font-style: normal;
+    line-height: 1.5;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ---------- 电影：海报墙 ---------- */
+.wuyu-grid--movies {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(165px, 1fr));
+    gap: 2rem 1.4rem;
+}
+
+.wuyu-card--movies {
+    --panel-accent: var(--wuyu-movies);
+}
+
+.wuyu-poster {
+    position: relative;
+    display: block;
+    aspect-ratio: 2 / 3;
+    overflow: hidden;
+    border-radius: 10px;
+    box-shadow:
+        0 18px 30px -16px rgba(10, 14, 22, .55),
+        0 2px 6px rgba(10, 14, 22, .12);
+    transition: transform .35s ease, box-shadow .35s ease;
+}
+
+.wuyu-poster img {
+    transition: transform .6s cubic-bezier(.2, .75, .25, 1);
+}
+
+.wuyu-card--movies:hover .wuyu-poster,
+.wuyu-card--movies:focus-visible .wuyu-poster {
+    transform: translateY(-6px);
+    box-shadow:
+        0 28px 40px -18px rgba(10, 14, 22, .6),
+        0 0 0 1px color-mix(in srgb, var(--wuyu-movies) 60%, transparent);
+}
+
+.wuyu-card--movies:hover .wuyu-poster img {
+    transform: scale(1.05);
+}
+
+.wuyu-poster__badge {
+    position: absolute;
+    top: .55rem;
+    right: .55rem;
+    z-index: 2;
+    padding: .25rem .45rem;
+    border-radius: 999px;
+    background: rgba(8, 10, 14, .62);
+    backdrop-filter: blur(4px);
+}
+
+.wuyu-stars {
+    display: inline-flex;
+    gap: 1px;
+    color: #f0b429;
+    font-size: .8rem;
+    line-height: 1;
+    letter-spacing: .02em;
+}
+
+.wuyu-stars i {
+    font-style: normal;
+}
+
+.wuyu-poster__hover {
+    position: absolute;
+    inset: auto 0 0;
+    z-index: 2;
+    padding: 2.5rem .9rem .9rem;
+    color: #f3efe7;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    background: linear-gradient(180deg, transparent, rgba(5, 6, 9, .88) 45%);
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity .3s ease, transform .3s ease;
+}
+
+.wuyu-card--movies:hover .wuyu-poster__hover,
+.wuyu-card--movies:focus-visible .wuyu-poster__hover {
+    opacity: 1;
+    transform: none;
+}
+
+/* ---------- 漫剧：横向信息卡 ---------- */
+.wuyu-grid--anime {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
+    gap: 1.1rem;
+}
+
+.wuyu-card--anime {
+    --panel-accent: var(--wuyu-anime);
+    position: relative;
+    display: grid;
+    grid-template-columns: 108px minmax(0, 1fr);
+    gap: 1rem;
+    padding: .85rem;
+    overflow: hidden;
+    border: 1px solid var(--card-separator-color);
+    border-radius: 16px;
+    background: var(--card-background);
+    box-shadow: 0 10px 26px -18px rgba(20, 30, 45, .45);
+    transition: transform .3s ease, box-shadow .3s ease, border-color .3s ease;
+}
+
+.wuyu-card--anime::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 46%;
+    height: 100%;
+    background: radial-gradient(circle at 100% 0, color-mix(in srgb, var(--wuyu-anime) 14%, transparent), transparent 70%);
+    pointer-events: none;
+}
+
+.wuyu-card--anime:hover,
+.wuyu-card--anime:focus-visible {
+    border-color: color-mix(in srgb, var(--wuyu-anime) 50%, transparent);
+    box-shadow: 0 18px 34px -18px rgba(20, 30, 45, .5);
+    transform: translateY(-4px);
+}
+
+.wuyu-anime__cover {
+    position: relative;
+    display: block;
+    aspect-ratio: 2 / 3;
+    overflow: hidden;
+    border-radius: 10px;
+    box-shadow: 0 8px 16px -10px rgba(0, 0, 0, .5);
+}
+
+.wuyu-anime__body {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: .35rem;
+    min-width: 0;
+    padding: .15rem .1rem 0;
+}
+
+.wuyu-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .35rem;
+}
+
+.wuyu-chips span {
+    padding: .08rem .5rem;
+    color: color-mix(in srgb, var(--wuyu-anime) 70%, var(--card-text-color-main));
+    font-size: .92rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--wuyu-anime) 13%, transparent);
+}
+
+.wuyu-anime__title {
+    color: var(--card-text-color-main);
+    font-family: var(--serif-font-family);
+    font-size: 1.4rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.wuyu-anime__original {
+    overflow: hidden;
+    margin-top: -.2rem;
+    color: var(--card-text-color-tertiary);
+    font-size: 1rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.wuyu-anime__comment {
+    display: -webkit-box;
+    overflow: hidden;
+    color: var(--body-text-color);
+    font-size: 1.1rem;
+    line-height: 1.65;
+    opacity: .86;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+}
+
+.wuyu-anime__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: .5rem;
+    margin-top: auto;
+    padding-top: .45rem;
+    color: var(--card-text-color-tertiary);
+    font-size: .98rem;
+    letter-spacing: .04em;
+    border-top: 1px dashed var(--card-separator-color);
+}
+
+/* ---------- 音乐：唱片与内页 ---------- */
+.wuyu-grid--music {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 2.2rem 3.2rem;
+    padding-right: 2rem;
+}
+
+.wuyu-card--music {
+    --panel-accent: var(--wuyu-music);
+}
+
+.wuyu-album {
+    position: relative;
+    display: block;
+    aspect-ratio: 1;
+}
+
+.wuyu-album__sleeve {
+    position: relative;
+    z-index: 1;
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    border-radius: 4px;
+    box-shadow:
+        0 16px 26px -14px rgba(10, 10, 20, .6),
+        inset 0 0 0 1px rgba(255, 255, 255, .06);
+    transition: transform .4s ease;
+}
+
+.wuyu-album__disc {
+    position: absolute;
+    top: 4%;
+    left: 4%;
+    width: 92%;
+    height: 92%;
+    border-radius: 50%;
+    background:
+        radial-gradient(circle, #111 0 4%, color-mix(in srgb, var(--wuyu-music) 70%, #ffffff) 4.5% 17%, #151515 17.5% 19%, transparent 19.5%),
+        repeating-radial-gradient(circle, #161616 0 2px, #222 2px 3px),
+        #111;
+    box-shadow: 0 10px 20px -10px rgba(0, 0, 0, .7);
+    transform: translateX(14%) rotate(0deg);
+    transition: transform .6s cubic-bezier(.2, .8, .2, 1);
+}
+
+.wuyu-album__disc::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: conic-gradient(from 30deg, transparent 0 12%, rgba(255, 255, 255, .12) 16%, transparent 22% 62%, rgba(255, 255, 255, .08) 66%, transparent 72%);
+}
+
+.wuyu-card--music:hover .wuyu-album__disc,
+.wuyu-card--music:focus-visible .wuyu-album__disc {
+    transform: translateX(36%) rotate(160deg);
+}
+
+.wuyu-card--music:hover .wuyu-album__sleeve,
+.wuyu-card--music:focus-visible .wuyu-album__sleeve {
+    transform: translateX(-4px) rotate(-1.5deg);
+}
+
+/* ---------- 详情弹窗 ---------- */
+body.wuyu-modal-open {
+    overflow: hidden;
+}
+
+.wuyu-modal {
+    position: fixed;
+    z-index: 10000;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: rgba(8, 13, 20, .72);
+    backdrop-filter: blur(6px);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .25s ease, visibility .25s ease;
+}
+
+.wuyu-modal.is-open {
+    opacity: 1;
+    visibility: visible;
+}
+
+.wuyu-modal__dialog {
+    position: relative;
+    width: 880px;
+    max-width: 100%;
+    max-height: 88vh;
+    overflow-y: auto;
+    color: var(--card-text-color-main);
+    border-radius: 20px;
+    background: var(--card-background);
+    box-shadow: 0 30px 90px rgba(0, 0, 0, .4);
+    transform: translateY(16px) scale(.98);
+    transition: transform .3s cubic-bezier(.2, .8, .2, 1);
+}
+
+.wuyu-modal.is-open .wuyu-modal__dialog {
+    transform: none;
+}
+
+.wuyu-modal__close,
+.wuyu-modal__nav {
+    position: absolute;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 2.4rem;
+    height: 2.4rem;
+    padding: 0;
+    color: var(--card-text-color-main);
+    font-size: 1.3rem;
+    line-height: 1;
+    border: 1px solid var(--card-separator-color);
+    border-radius: 50%;
+    background: var(--card-background);
+    cursor: pointer;
+    transition: border-color .2s ease, color .2s ease;
+}
+
+.wuyu-modal__close {
+    top: .9rem;
+    right: .9rem;
+    font-size: 1.6rem;
+}
+
+.wuyu-modal__nav {
+    top: 50%;
+    position: fixed;
+    transform: translateY(-50%);
+    border-color: rgba(255, 255, 255, .3);
+    background: rgba(0, 0, 0, .3);
+    color: #fff;
+}
+
+.wuyu-modal__nav--prev { left: 2vw; }
+.wuyu-modal__nav--next { right: 2vw; }
+
+.wuyu-modal__close:hover,
+.wuyu-modal__close:focus-visible,
+.wuyu-modal__nav:hover,
+.wuyu-modal__nav:focus-visible {
+    border-color: var(--wuyu-accent, var(--accent-color));
+    color: var(--wuyu-accent, var(--accent-color));
+}
+
+.wuyu-modal__nav[disabled] {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.wuyu-detail {
+    display: grid;
+    grid-template-columns: 250px minmax(0, 1fr);
+    gap: 2rem;
+    padding: 2.2rem;
+}
+
+.wuyu-detail__cover {
+    align-self: start;
+    position: sticky;
+    top: 0;
+}
+
+.wuyu-detail__cover .wuyu-cover {
+    aspect-ratio: 2 / 3;
+    border-radius: 10px;
+    box-shadow: 0 22px 40px -20px rgba(0, 0, 0, .6);
+}
+
+.wuyu-detail--books .wuyu-detail__cover .wuyu-cover {
+    border-radius: 3px 8px 8px 3px;
+    box-shadow:
+        inset 7px 0 10px -5px rgba(0, 0, 0, .45),
+        0 22px 40px -20px rgba(0, 0, 0, .6);
+}
+
+.wuyu-detail--music .wuyu-detail__cover .wuyu-cover {
+    aspect-ratio: 1;
+    border-radius: 6px;
+}
+
+.wuyu-detail__cover .wuyu-cover__fallback {
+    font-size: 20px;
+}
+
+.wuyu-detail__body {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: .6rem;
+    min-width: 0;
+    padding-right: 1.5rem;
+}
+
+.wuyu-detail__kicker {
+    margin: 0;
+    color: var(--wuyu-accent, var(--accent-color));
+    font: 600 .74rem/1.4 var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    letter-spacing: .22em;
+}
+
+.wuyu-detail__title {
+    margin: 0;
+    color: var(--card-text-color-main);
+    font-family: var(--serif-font-family);
+    font-size: 2.2rem;
+    font-weight: 600;
+    line-height: 1.25;
+}
+
+.wuyu-detail__original {
+    margin: -.35rem 0 0;
+    color: var(--card-text-color-tertiary);
+    font-size: 1.1rem;
+    font-style: italic;
+}
+
+.wuyu-detail__rating {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--card-text-color-tertiary);
+    font-size: 1.05rem;
+}
+
+.wuyu-detail__rating .wuyu-stars {
+    font-size: 1.1rem;
+}
+
+.wuyu-detail__meta {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: .6rem 1.2rem;
+    width: 100%;
+    margin: .3rem 0 0;
+    padding: .85rem 0;
+    border-top: 1px solid var(--card-separator-color);
+    border-bottom: 1px solid var(--card-separator-color);
+}
+
+.wuyu-detail__meta div {
+    min-width: 0;
+}
+
+.wuyu-detail__meta dt {
+    color: var(--card-text-color-tertiary);
+    font-size: .8rem;
+    font-weight: 400;
+    letter-spacing: .12em;
+}
+
+.wuyu-detail__meta dd {
+    margin: .1rem 0 0;
+    font-size: 1.15rem;
+    line-height: 1.55;
+    overflow-wrap: anywhere;
+}
+
+.wuyu-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.wuyu-tags li {
+    padding: .12rem .6rem;
+    color: var(--wuyu-accent, var(--accent-color));
+    font-size: .95rem;
+    border: 1px solid color-mix(in srgb, var(--wuyu-accent, var(--accent-color)) 35%, transparent);
+    border-radius: 999px;
+}
+
+.wuyu-detail__section {
+    width: 100%;
+}
+
+.wuyu-detail__section h4 {
+    margin: .4rem 0 .35rem;
+    color: var(--card-text-color-tertiary);
+    font-size: .86rem;
+    font-weight: 600;
+    letter-spacing: .2em;
+}
+
+.wuyu-detail__section p {
+    margin: 0 0 .6rem;
+    font-size: 1.28rem;
+    line-height: 1.85;
+}
+
+.wuyu-detail__comment {
+    width: 100%;
+    margin: .4rem 0 0;
+    padding: .8rem 1rem;
+    border-left: 3px solid var(--wuyu-accent, var(--accent-color));
+    border-radius: 0 10px 10px 0;
+    background: color-mix(in srgb, var(--wuyu-accent, var(--accent-color)) 8%, transparent);
+}
+
+.wuyu-detail__comment::before {
+    content: "推荐语";
+    display: block;
+    margin-bottom: .2rem;
+    color: var(--wuyu-accent, var(--accent-color));
+    font: 600 .82rem/1.4 var(--mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+    letter-spacing: .2em;
+}
+
+.wuyu-detail__comment p {
+    margin: 0;
+    font-size: 1.25rem;
+    line-height: 1.75;
+}
+
+.wuyu-detail__link {
+    margin-top: .4rem;
+    padding: .4rem 1rem;
+    color: var(--accent-color-text) !important;
+    font-size: 1.15rem;
+    text-decoration: none !important;
+    border-radius: 999px;
+    background: var(--wuyu-accent, var(--accent-color));
+    transition: filter .2s ease;
+}
+
+.wuyu-detail__link:hover {
+    filter: brightness(1.08);
+}
+
+.wuyu-note {
+    margin: 0;
+    padding-top: 18px;
+    border-top: 1px dashed var(--card-separator-color);
+    color: var(--card-text-color-tertiary);
+    font-size: 1.05rem;
+    line-height: 1.8;
+    text-align: center;
+}
+
+.wuyu-note a {
+    color: var(--accent-color);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+}
+
+.wuyu-note a:hover {
+    border-bottom-color: currentColor;
+}
+
+/* ---------- 首页：物语入口 ---------- */
+.home-wuyu {
+    margin-top: 28px;
+}
+
+.home-wuyu__grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.home-wuyu__tile {
+    --accent: var(--wuyu-books);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-height: 88px;
+    padding: 14px 62px 13px 16px;
+    overflow: hidden;
+    border: 1px solid var(--card-separator-color);
+    border-radius: 12px;
+    background: var(--card-background);
+    color: inherit;
+    text-decoration: none;
+    transition: transform .18s ease, border-color .18s ease, box-shadow .2s ease;
+}
+
+.home-wuyu__tile--movies { --accent: #a34838; }
+.home-wuyu__tile--anime { --accent: #3d7a6a; }
+.home-wuyu__tile--music { --accent: #6c5a8e; }
+
+:root[data-scheme="dark"] .home-wuyu__tile {
+    --accent: #d9ae79;
+}
+:root[data-scheme="dark"] .home-wuyu__tile--movies { --accent: #e08f7a; }
+:root[data-scheme="dark"] .home-wuyu__tile--anime { --accent: #7fc4b2; }
+:root[data-scheme="dark"] .home-wuyu__tile--music { --accent: #b4a1e0; }
+
+.home-wuyu__tile::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 2px;
+    background: var(--accent);
+    opacity: .55;
+}
+
+.home-wuyu__tile:hover {
+    transform: translateY(-3px);
+    border-color: color-mix(in srgb, var(--accent) 45%, var(--card-separator-color));
+    box-shadow: 0 12px 28px -20px rgba(36, 31, 24, .35);
+    text-decoration: none;
+}
+
+.home-wuyu__en {
+    font-size: .95rem;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--card-text-color-tertiary);
+}
+
+.home-wuyu__name {
+    font-family: var(--serif-font-family);
+    font-size: 1.55rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--card-text-color-main);
+}
+
+.home-wuyu__count {
+    position: absolute;
+    right: 14px;
+    bottom: 9px;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.9rem;
+    line-height: 1;
+    color: var(--accent);
+    opacity: .35;
+}
+
+.home-wuyu__thumb {
+    position: absolute;
+    top: 10px;
+    right: 12px;
+    width: 36px;
+    height: 52px;
+    object-fit: cover;
+    border-radius: 4px;
+    box-shadow: 0 6px 14px -8px rgba(20, 16, 10, .55);
+    opacity: .92;
+    transition: transform .2s ease, opacity .2s ease;
+}
+
+.home-wuyu__tile:hover .home-wuyu__thumb {
+    opacity: 1;
+    transform: translateY(-2px) rotate(1.5deg);
+}
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 1023px) {
+    .wuyu-grid--anime {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 767px) {
+    .wuyu-wrap {
+        gap: 28px;
+    }
+
+    .wuyu-title {
+        font-size: 2.9rem;
+    }
+
+    .wuyu-intro {
+        font-size: 1.4rem;
+    }
+
+    .wuyu-tabs {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: .55rem;
+    }
+
+    .wuyu-tab {
+        padding: .75rem .85rem .8rem;
+    }
+
+    .wuyu-tab__name {
+        font-size: 1.3rem;
+    }
+
+    .wuyu-tab__count {
+        font-size: 1.4rem;
+    }
+
+    .wuyu-panel__head {
+        gap: .4rem .8rem;
+    }
+
+    .wuyu-panel__title {
+        font-size: 1.75rem;
+    }
+
+    .wuyu-toolbar {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    .wuyu-search {
+        width: 100%;
+    }
+
+    .wuyu-search input,
+    .wuyu-search input:focus {
+        width: 100%;
+    }
+
+    .wuyu-grid--books {
+        grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+        gap: 2rem 1.25rem;
+        padding: 0 .75rem;
+    }
+
+    .wuyu-book::after {
+        right: -.65rem;
+        left: -.65rem;
+    }
+
+    .wuyu-grid--movies {
+        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+        gap: 1.5rem 1rem;
+    }
+
+    .wuyu-grid--anime {
+        grid-template-columns: 1fr;
+    }
+
+    .wuyu-card--anime {
+        grid-template-columns: 92px minmax(0, 1fr);
+        padding: .75rem;
+    }
+
+    .wuyu-grid--music {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        gap: 1.8rem 2.4rem;
+        padding-right: 1.5rem;
+    }
+
+    .wuyu-modal {
+        align-items: flex-end;
+        padding: 0;
+    }
+
+    .wuyu-modal__dialog {
+        max-height: 90vh;
+        border-radius: 20px 20px 0 0;
+    }
+
+    .wuyu-modal__nav {
+        display: none;
+    }
+
+    .wuyu-detail {
+        grid-template-columns: 1fr;
+        gap: 1.2rem;
+        padding: 1.6rem 1.25rem 2rem;
+    }
+
+    .wuyu-detail__cover {
+        position: static;
+        width: 150px;
+        margin: 0 auto;
+    }
+
+    .wuyu-detail--music .wuyu-detail__cover {
+        width: 150px;
+        margin: 0 auto;
+    }
+
+    .wuyu-detail__body {
+        padding-right: 0;
+    }
+
+    .wuyu-detail__title {
+        font-size: 1.8rem;
+    }
+
+    .home-wuyu__grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .wuyu-panel,
+    .wuyu-book__object,
+    .wuyu-album__disc,
+    .wuyu-modal__dialog,
+    .home-wuyu__tile {
+        animation: none;
+        transition: none;
+    }
+}

@@ -1,0 +1,20 @@
+{{- $item := . -}}
+{{- $cover := $item.cover | default "" -}}
+{{- $directors := delimit ($item.directors | default slice) " / " -}}
+<button class="wuyu-card wuyu-card--movies" type="button" data-wuyu-open="wuyu-{{ $item.kind }}-{{ $item.id }}" data-search="{{ $item.title }} {{ $item.original_title }} {{ $directors }} {{ $item.year }} {{ delimit ($item.genres | default slice) " " }}" style="--hue:{{ $item.hue | default 10 }}" aria-label="查看《{{ $item.title }}》详情">
+    <span class="wuyu-poster">
+        <span class="wuyu-cover">
+            <span class="wuyu-cover__fallback"><b>{{ $item.title }}</b><em>{{ $item.year }}</em></span>
+            {{- with $cover }}<img src="{{ . | relURL }}" alt="{{ $item.title }} 海报" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.style.display='none'">{{ end }}
+        </span>
+        <span class="wuyu-poster__badge"><span class="wuyu-stars" aria-label="我的评分：五星"><i>★</i><i>★</i><i>★</i><i>★</i><i>★</i></span></span>
+        {{- with $item.intro }}<span class="wuyu-poster__hover">{{ . | truncate 92 }}</span>{{ end }}
+    </span>
+    <span class="wuyu-caption">
+        <strong>{{ $item.title }}</strong>
+        <em>{{ $directors }}{{ with $item.year }} · {{ . }}{{ end }}</em>
+    </span>
+</button>
+<template id="wuyu-{{ $item.kind }}-{{ $item.id }}">
+    {{ partial "wuyu/detail-movie" $item }}
+</template>

@@ -1,0 +1,38 @@
+{{- $item := . -}}
+<div class="wuyu-detail wuyu-detail--books" style="--wuyu-accent:var(--wuyu-books)">
+    <div class="wuyu-detail__cover">
+        <span class="wuyu-cover">
+            <span class="wuyu-cover__fallback"><b>{{ $item.title }}</b><em>{{ delimit ($item.authors | default slice) " / " }}</em></span>
+            {{- with $item.cover }}<img src="{{ . | relURL }}" alt="{{ $item.title }} 封面" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.style.display='none'">{{ end }}
+        </span>
+    </div>
+    <div class="wuyu-detail__body">
+        <p class="wuyu-detail__kicker">书籍 · {{ $item.year }}</p>
+        <h3 class="wuyu-detail__title">{{ $item.title }}</h3>
+        {{- with $item.original_title }}<p class="wuyu-detail__original">{{ . }}</p>{{ end }}
+        <div class="wuyu-detail__rating">
+            <span class="wuyu-stars" aria-label="我的评分：五星"><i>★</i><i>★</i><i>★</i><i>★</i><i>★</i></span>
+            <span>我的评分 · 5 星</span>
+            {{- with $item.finished }}<span>· {{ . }}</span>{{ end }}
+        </div>
+        <dl class="wuyu-detail__meta">
+            {{- with $item.authors }}<div><dt>作者</dt><dd>{{ delimit . " / " }}</dd></div>{{ end }}
+            {{- with $item.translator }}<div><dt>译者</dt><dd>{{ delimit . " / " }}</dd></div>{{ end }}
+            {{- with $item.publisher }}<div><dt>出版社</dt><dd>{{ . }}</dd></div>{{ end }}
+            {{- with $item.pubdate }}<div><dt>出版年</dt><dd>{{ . }}</dd></div>{{ end }}
+            {{- with $item.pages }}<div><dt>页数</dt><dd>{{ . }}</dd></div>{{ end }}
+            {{- with $item.douban_rating }}<div><dt>豆瓣评分</dt><dd>{{ . }}{{ with $item.douban_votes }} · {{ . }} 人评价{{ end }}</dd></div>{{ end }}
+        </dl>
+        {{- with $item.genres }}
+        <ul class="wuyu-tags">{{ range . }}<li>{{ . }}</li>{{ end }}</ul>
+        {{- end }}
+        <section class="wuyu-detail__section wuyu-detail__section--intro">
+            <h4>简介</h4>
+            <p>{{ $item.intro | default "暂无简介。" }}</p>
+        </section>
+        {{- with $item.my_comment }}
+        <section class="wuyu-detail__comment"><p>{{ . }}</p></section>
+        {{- end }}
+        {{- with $item.url }}<a class="wuyu-detail__link" href="{{ . }}" target="_blank" rel="noopener noreferrer">在豆瓣查看 ↗</a>{{ end }}
+    </div>
+</div>

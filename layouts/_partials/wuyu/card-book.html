@@ -1,0 +1,20 @@
+{{- $item := . -}}
+{{- $cover := $item.cover | default "" -}}
+{{- $authors := delimit ($item.authors | default slice) " / " -}}
+<button class="wuyu-card wuyu-card--books" type="button" data-wuyu-open="wuyu-{{ $item.kind }}-{{ $item.id }}" data-search="{{ $item.title }} {{ $item.original_title }} {{ $authors }} {{ $item.year }} {{ delimit ($item.genres | default slice) " " }}" style="--hue:{{ $item.hue | default 30 }}" aria-label="查看《{{ $item.title }}》详情">
+    <span class="wuyu-book">
+        <span class="wuyu-book__object">
+            <span class="wuyu-cover">
+                <span class="wuyu-cover__fallback"><b>{{ $item.title }}</b><em>{{ $authors }}{{ with $item.year }} · {{ . }}{{ end }}</em></span>
+                {{- with $cover }}<img src="{{ . | relURL }}" alt="{{ $item.title }} 封面" loading="lazy" decoding="async" referrerpolicy="no-referrer" onerror="this.style.display='none'">{{ end }}
+            </span>
+        </span>
+    </span>
+    <span class="wuyu-caption">
+        <strong>{{ $item.title }}</strong>
+        <em>{{ $authors }}{{ with $item.year }} · {{ . }}{{ end }}</em>
+    </span>
+</button>
+<template id="wuyu-{{ $item.kind }}-{{ $item.id }}">
+    {{ partial "wuyu/detail-book" $item }}
+</template>
