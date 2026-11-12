@@ -10,6 +10,12 @@
 #
 # 添加新链接：照着下面的格式在文件末尾追加一条即可，构建时会自动渲染。
 
+- name: "第三夏尔 | Third Shire"
+  url: "https://thirdshire.com/"
+  avatar: "https://thirdshire.com/blackcat_avatar.jpg"
+  description: "认真生活，积极摸鱼"
+  note: "这次设计参考的博客"
+
 - name: "Elainafan"
   url: "https://www.elainafan.one/"
   avatar: "https://www.elainafan.one/img/elainafan.jpg"
