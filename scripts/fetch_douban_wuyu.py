@@ -9,9 +9,9 @@
 只保留状态为「看过 / 读过 / 听过 / 玩过」且本人评分 4 星或 5 星的记录。
 
 分类规则：
-    - 豆瓣 subtype = tv（剧集）→ 漫剧
-    - subtype = movie 且类型含「动画」→ 漫剧
-    - 其余 subtype = movie → 电影
+    - 电影权重高于漫剧：subtype = movie，或集数为 1 的条目 → 电影
+      （包括动画电影、OVA/OAD；《超能陆战队》《起风了》《白蛇：缘起》都归电影）
+    - subtype = tv，或集数 > 1 → 漫剧（动画剧集 + 真人剧集）
     - 书籍排除网文（辰东等网文作者、常见网文标题）
     - 音乐仍只收 5 星（与上一版保持一致）
     - 游戏单独成类
@@ -77,20 +77,14 @@ ANIME_TITLE_HINTS = (
 ANIME_TITLE_RE = re.compile(r'(OAD|OVA|剧场版|劇場版|第\d+[话話]|总集篇|特别篇|TV版|动画|动漫)', re.I)
 
 
-def is_anime(title, genres, subtype, sid):
-    if subtype == 'tv':
-        return True
-    if '动画' in (genres or []):
-        return True
-    if sid in MANUAL_ANIME_IDS:
-        return True
-    if ANIME_TITLE_RE.search(title or ''):
-        return True
-    if any(h in (title or '') for h in ANIME_TITLE_HINTS):
-        if '浪客剑心' in (title or '') and '最终章' in (title or ''):
-            return False
-        return True
-    return False
+def is_anime(title, genres, subtype, sid, episodes=None):
+    """电影大类优先：集数可判定时先看集数，只有剧集才归漫剧。"""
+    if episodes not in (None, '', 0, '0'):
+        try:
+            return int(episodes) > 1
+        except (TypeError, ValueError):
+            pass
+    return subtype == 'tv'
 
 
 def session() -> requests.Session:
@@ -226,7 +220,7 @@ def build_rows(uid: str):
         sid = str(s.get('id'))
         subtype = s.get('subtype') or ''
         genres = [x for x in (s.get('genres') or []) if isinstance(x, str)]
-        kind = 'anime' if is_anime(s.get('title') or '', genres, subtype, sid) else 'movie'
+        kind = 'anime' if is_anime(s.get('title') or '', genres, subtype, sid, s.get('episodes_count')) else 'movie'
         row = {
             'id': sid, 'kind': kind, 'title': s.get('title') or '',
             'original_title': '', 'year': str(s.get('year') or year_of(s.get('card_subtitle'))),
