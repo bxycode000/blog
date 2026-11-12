@@ -2,6 +2,7 @@
 
 {{ define "main" }}
 {{- $friends := site.Data.friends | default slice -}}
+{{- $software := site.Data.software | default slice -}}
 {{- $avatar := .Site.Params.sidebar.avatar | default "images/avatar-256.webp" -}}
 {{- $avatarFallback := .Site.Params.sidebar.avatarFallback | default $avatar -}}
 <div class="friends-wrap">
@@ -94,6 +95,36 @@
         </div>
         {{- end }}
     </section>
+
+    {{- with $software }}
+    <section class="items-section" aria-labelledby="software-title">
+        <div class="friends-section__head">
+            <h2 class="friends-section__title" id="software-title"><span class="friends-section__dot" aria-hidden="true"></span>软件装备</h2>
+            <span class="friends-section__count">{{ len . }} 件</span>
+        </div>
+        <div class="items-grid">
+            {{- $tierNames := dict "legendary" "传说" "epic" "史诗" "rare" "稀有" -}}
+            {{- range . }}
+            <article class="item-card item-card--{{ .tier }}">
+                <span class="item-card__bg" aria-hidden="true"><img src="{{ .icon | relURL }}" alt="" loading="lazy"></span>
+                <div class="item-card__top">
+                    <span class="item-badge">
+                        <img class="item-badge__icon" src="{{ .icon | relURL }}" alt="" loading="lazy">
+                        <span class="item-stars" aria-label="{{ .stars }} 星">{{ range seq .stars }}★{{ end }}</span>
+                        <span class="item-tier">{{ index $tierNames .tier | default "普通" }}</span>
+                    </span>
+                    <span class="item-year">{{ .year }}</span>
+                </div>
+                <div class="item-card__body">
+                    <h3 class="item-name"><a href="{{ .url }}" target="_blank" rel="noopener noreferrer">{{ .name }}<span class="item-ext" aria-hidden="true">↗</span></a></h3>
+                    <p class="item-desc">{{ .description }}</p>
+                    <span class="item-spec">{{ .spec }}</span>
+                </div>
+            </article>
+            {{- end }}
+        </div>
+    </section>
+    {{- end }}
 
     <p class="friends-outro">
         <span class="friends-outro__icon" aria-hidden="true">{{ partial "helper/icon" "heart-handshake" }}</span>

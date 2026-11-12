@@ -624,3 +624,289 @@ body.friends-page {
         transform: none;
     }
 }
+
+
+/* =========================================================
+   软件装备 / Items
+   参考 Nagi Items 的装备卡语言：稀有度、星级、年份、图标水印
+   ========================================================= */
+.items-section {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.items-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.item-card {
+    --item-accent: #8a5a2b;
+    --item-tint: rgba(138, 90, 43, .08);
+    --item-shadow: rgba(36, 31, 24, .12);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    min-height: 196px;
+    padding: 18px 20px 16px;
+    border: 1px solid color-mix(in srgb, var(--item-accent) 24%, var(--card-separator-color));
+    border-radius: var(--card-border-radius);
+    background:
+        radial-gradient(ellipse at 18% 0%, var(--item-tint), transparent 64%),
+        var(--card-background);
+    overflow: hidden;
+    transition: transform .18s ease, border-color .2s ease, box-shadow .25s ease;
+}
+
+.item-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 20px;
+    right: 20px;
+    height: 2px;
+    border-radius: 999px;
+    background: linear-gradient(90deg, transparent, var(--item-accent), transparent);
+    opacity: .55;
+    transition: opacity .2s ease;
+    pointer-events: none;
+}
+
+.item-card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: linear-gradient(160deg, transparent 55%, var(--item-tint));
+    opacity: .45;
+    pointer-events: none;
+}
+
+.item-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--item-accent);
+    box-shadow: 0 16px 34px var(--item-shadow);
+}
+
+.item-card:hover::before {
+    opacity: 1;
+}
+
+.item-card__bg {
+    position: absolute;
+    right: -18px;
+    bottom: -18px;
+    width: 150px;
+    height: 150px;
+    opacity: .055;
+    pointer-events: none;
+    transform: rotate(-8deg);
+    transition: opacity .3s ease, transform .3s ease;
+    z-index: 0;
+}
+
+.item-card__bg img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: grayscale(1);
+}
+
+.item-card:hover .item-card__bg {
+    opacity: .12;
+    transform: rotate(-4deg) scale(1.04);
+}
+
+.item-card__top {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.item-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+}
+
+.item-badge__icon {
+    width: 26px;
+    height: 26px;
+    padding: 4px;
+    flex: none;
+    border: 1px solid rgba(255, 255, 255, .09);
+    border-radius: 7px;
+    background: #17191c;
+    object-fit: contain;
+}
+
+.item-stars {
+    font-size: .95rem;
+    letter-spacing: .03em;
+    color: var(--item-accent);
+    white-space: nowrap;
+}
+
+.item-tier {
+    padding: 3px 6px;
+    border: 1px solid color-mix(in srgb, var(--item-accent) 42%, transparent);
+    border-radius: 4px;
+    font: 600 .95rem/1.2 var(--mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+    letter-spacing: .08em;
+    color: var(--item-accent);
+    white-space: nowrap;
+}
+
+.item-year {
+    font: 1.1rem/1.4 var(--mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+    color: var(--card-text-color-tertiary);
+    opacity: .72;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.item-card__body {
+    position: relative;
+    z-index: 1;
+    margin-top: auto;
+    padding-top: 30px;
+}
+
+.item-name {
+    margin: 0 0 6px;
+    font-family: var(--serif-font-family);
+    font-size: 1.75rem;
+    font-weight: 600;
+    line-height: 1.35;
+    letter-spacing: .01em;
+    color: var(--card-text-color-main);
+}
+
+.item-name a {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 5px;
+    color: inherit;
+    text-decoration: none;
+}
+
+.item-name a:hover {
+    color: var(--item-accent);
+    text-decoration: none;
+}
+
+.item-ext {
+    font-size: .85em;
+    opacity: .28;
+    transition: opacity .18s ease, transform .18s ease;
+}
+
+.item-name a:hover .item-ext {
+    opacity: 1;
+    transform: translate(2px, -2px);
+}
+
+.item-desc {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin: 0 0 10px;
+    font-size: 1.2rem;
+    line-height: 1.65;
+    color: var(--card-text-color-secondary);
+}
+
+.item-spec {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--item-tint);
+    color: var(--item-accent);
+    font: 500 1rem/1.4 var(--mono, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+    letter-spacing: .02em;
+}
+
+/* ---------- 稀有度配色 ---------- */
+.item-card--legendary {
+    --item-accent: #a97325;
+    --item-tint: rgba(169, 115, 37, .09);
+    --item-shadow: rgba(93, 58, 15, .16);
+}
+
+.item-card--epic {
+    --item-accent: #80608e;
+    --item-tint: rgba(128, 96, 142, .09);
+    --item-shadow: rgba(67, 42, 80, .14);
+}
+
+.item-card--rare {
+    --item-accent: #5f7d8c;
+    --item-tint: rgba(95, 125, 140, .08);
+    --item-shadow: rgba(38, 66, 78, .12);
+}
+
+:root[data-scheme="dark"] .item-card--legendary {
+    --item-accent: #d9ae79;
+    --item-tint: rgba(217, 174, 121, .10);
+    --item-shadow: rgba(0, 0, 0, .42);
+}
+
+:root[data-scheme="dark"] .item-card--epic {
+    --item-accent: #b79bc5;
+    --item-tint: rgba(183, 155, 197, .10);
+    --item-shadow: rgba(0, 0, 0, .42);
+}
+
+:root[data-scheme="dark"] .item-card--rare {
+    --item-accent: #8fb3c2;
+    --item-tint: rgba(143, 179, 194, .09);
+    --item-shadow: rgba(0, 0, 0, .42);
+}
+
+@media (max-width: 1199px) {
+    .items-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 767px) {
+    .items-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .item-card {
+        min-height: 170px;
+        padding: 16px;
+    }
+
+    .item-name {
+        font-size: 1.6rem;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .item-card,
+    .item-card::before,
+    .item-card::after,
+    .item-card__bg,
+    .item-name a,
+    .item-ext {
+        transition: none;
+    }
+
+    .item-card:hover {
+        transform: none;
+    }
+
+    .item-card:hover .item-card__bg {
+        transform: rotate(-8deg);
+    }
+}

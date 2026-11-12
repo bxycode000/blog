@@ -1,0 +1,67 @@
+# =========================================================
+# 软件装备数据 · data/software.yml
+# =========================================================
+# 用于「链接」页面的「软件装备」小板块。
+# 字段：
+#   name        软件名称
+#   url         官网/下载地址
+#   icon        图标路径（static/icons/items/ 下）
+#   tier        legendary / epic / rare
+#   stars       星级 1-3
+#   year        开始使用年份
+#   description 一句话介绍
+#   spec        标签（平台、用途等）
+
+- name: "Claude"
+  url: "https://claude.ai"
+  icon: "icons/items/claude.svg"
+  tier: "legendary"
+  stars: 3
+  year: "2025"
+  description: "主力 AI 结对编程伙伴。"
+  spec: "Anthropic · 日常"
+
+- name: "Codex"
+  url: "https://openai.com/codex/"
+  icon: "icons/items/codex.svg"
+  tier: "epic"
+  stars: 2
+  year: "2025"
+  description: "OpenAI 的代码智能体，适合查漏补缺。"
+  spec: "OpenAI · CLI / IDE"
+
+- name: "Cursor"
+  url: "https://cursor.com"
+  icon: "icons/items/cursor.svg"
+  tier: "epic"
+  stars: 3
+  year: "2024"
+  description: "AI 原生编辑器，改代码很快。"
+  spec: "Anysphere · Editor"
+
+- name: "DeepSeek Harness"
+  url: "https://www.deepseek.com/harness/"
+  icon: "icons/items/deepseek-harness.svg"
+  tier: "legendary"
+  stars: 3
+  year: "2026"
+  description: "插件化的 Agent 工作台，正在深度使用。"
+  spec: "DeepSeek · Agent"
+
+- name: "WorkBuddy"
+  url: "https://www.workbuddy.cn/"
+  icon: "icons/items/workbuddy.svg"
+  tier: "epic"
+  stars: 2
+  year: "2026"
+  description: "腾讯的 AI Agent 办公助手。"
+  spec: "Tencent · 办公"
+
+- name: "Obsidian"
+  url: "https://obsidian.md"
+  icon: "icons/items/obsidian.svg"
+  tier: "rare"
+  stars: 3
+  year: "2023"
+  description: "我的第二大脑。"
+  spec: "本地 Markdown 笔记"
