@@ -65,8 +65,12 @@ jobs:
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v3
         with:
-          hugo-version: "latest"
+          hugo-version: "0.170.0"
           extended: true
+
+      # 编译 SCSS 需要 Dart Sass：新版 Hugo 不再内置编译器，必须自己装到 PATH
+      - name: Setup Dart Sass
+        run: npm install -g sass
 
       - name: Build
         run: hugo -e stack --destination public/blog
